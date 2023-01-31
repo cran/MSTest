@@ -26,6 +26,8 @@ MSVARmdl(Y, p, k, control = list())
  \item{\code{use_diff_init}: }{integer determining how many different initial values to try (that do not return \code{NaN}; see \code{maxit_converge}). Default is \code{1}.}
  \item{\code{mle_stationary_constraint}: }{Boolean determining if only stationary solutions are considered (if \code{TRUE}) or not (if \code{FALSE}). Default is \code{TRUE}.}
  \item{\code{mle_variance_constraint}: }{double used to determine the lower bound on the smallest eigenvalue for the covariance matrix of each regime. Default is \code{1e-3}.}
+ \item{\code{lower}: }{Vector with lower bounds on parameters (Used only if method = "MLE"). Default is \code{NULL}.}
+ \item{\code{upper}: }{Vector with upper bounds on parameters (Used only if method = "MLE"). Default is \code{NULL}.}
 }}
 }
 \value{
@@ -102,10 +104,8 @@ control <- list(msmu   = TRUE,
                 use_diff_init = 1)
                 
 # Estimate model
-y_msvar_mdl <- MSVARmdl(y_msvar_simu$y, p = 1, k = 2, control)
-y_msvar_mdl
-
-
+#y_msvar_mdl <- MSVARmdl(y_msvar_simu$y, p = 1, k = 2, control)
+#y_msvar_mdl
 }
 \references{
 Dempster, A. P., N. M. Laird, and D. B. Rubin. 1977. “Maximum Likelihood from Incomplete Data via the EM Algorithm.” \emph{Journal of the Royal Statistical Society}. Series B 39 (1): 1–38..

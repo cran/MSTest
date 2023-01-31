@@ -1,8 +1,8 @@
 Package: MSTest
 Type: Package
 Title: Hypothesis Testing for Markov Switching Models
-Date: 2022-10-11
-Version: 0.1.0
+Date: 2023-01-31
+Version: 0.1.1
 Authors@R: 
   c(person(given = "Gabriel", 
            family = "Rodriguez Rondon", 
@@ -23,9 +23,10 @@ Imports: stats, rlang, nloptr, Rcpp (>= 1.0.1), numDeriv, lmf, foreach,
         GenSA, pso, GA
 LinkingTo: Rcpp, RcppArmadillo
 Depends: R (>= 4.0.0)
+SystemRequirements: C++17
 NeedsCompilation: yes
-Packaged: 2022-10-18 14:34:50 UTC; grodriguezrondon
+Packaged: 2023-01-31 21:42:14 UTC; grodriguezrondon
 Author: Gabriel Rodriguez Rondon [cre, aut],
   Jean-Marie Dufour [aut]
 Repository: CRAN
-Date/Publication: 2022-10-19 10:27:59 UTC
+Date/Publication: 2023-01-31 22:10:05 UTC
