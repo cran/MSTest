@@ -15,7 +15,7 @@ mdledit(mdl_h0, theta_h0, p, q, k0)
 
 \item{q}{integer specifying the number of series.}
 
-\item{k}{integer specifying the number of regimes.}
+\item{k0}{integer specifying the number of regimes.}
 }
 \value{
 List with model properties
