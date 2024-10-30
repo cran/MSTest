@@ -150,7 +150,7 @@ fitted.VARmdl <- function(object, ...){
 fitted.HMmdl <- function(object, ...){
   fittedvals <- matrix(0,object$n,object$q)
   for( xk in 1:object$k){
-    fittedvals <- fittedvals + object$St[,xk] * matrix(1, object$n, 1)%*%t(as.matrix(object$mu[xk,]))
+    fittedvals <- fittedvals + object$St[,xk] * matrix(1, object$n, 1)%*%t(as.matrix(object$mu[xk,]))  
   }
   return(fittedvals)
 }
@@ -169,14 +169,24 @@ fitted.HMmdl <- function(object, ...){
 #' @export
 fitted.MSARmdl <- function(object, ...){
   fittedvals <- matrix(0,object$n,object$q)
-  for(xk in 1:object$k){
-    intercept <- t(as.matrix(object$mu[xk,]))*(1-sum(object$phi))
-    fittedvals <- fittedvals + 
-      object$St[,xk] * (matrix(1, object$n, 1)%*%intercept + 
-                          object$x%*%object$phi)
+  if (is.null(object$betaZ)){
+    for(xk in 1:object$k){
+      intercept <- t(as.matrix(object$mu[xk,]))*(1-sum(object$phi))
+      fittedvals <- fittedvals + 
+        object$St[,xk] * (matrix(1, object$n, 1)%*%intercept + 
+                            object$x%*%object$phi)
+    }  
+  }else{
+    for(xk in 1:object$k){
+      intercept <- object$intercept[xk,]
+      fittedvals <- fittedvals + 
+        object$St[,xk] * (matrix(1, object$n, 1)%*%intercept + 
+                            object$x%*%object$phi + object$Z%*%object$betaZ)
+    }
   }
   return(fittedvals)
 }
+
 
 
 #' @title fitted values of a \code{MSVARmdl} object
@@ -427,7 +437,11 @@ logLik.Nmdl <- function(object, ...){
 #' 
 #' @export
 logLik.ARmdl <- function(object, ...){
-  logLike <- logLike_ARmdl(stats::coef(object), object)
+  if (is.null(object$control$Z)){
+    logLike <- logLike_ARmdl(stats::coef(object), object)  
+  }else{
+    logLike <- logLike_ARXmdl(stats::coef(object), object)  
+  }
   return(logLike)
 }
 
@@ -443,7 +457,11 @@ logLik.ARmdl <- function(object, ...){
 #' 
 #' @export
 logLik.VARmdl <- function(object, ...){
-  logLike <- logLike_Nmdl(stats::coef(object), object)
+  if (is.null(object$control$Z)){
+    logLike <- logLike_VARmdl(stats::coef(object), object)
+  }else{
+    logLike <- logLike_VARXmdl(stats::coef(object), object)
+  }
   return(logLike)
 }
 
@@ -459,7 +477,7 @@ logLik.VARmdl <- function(object, ...){
 #' 
 #' @export
 logLik.HMmdl <- function(object, ...){
-  logLike <- logLike_Nmdl(stats::coef(object), object)
+  logLike <- logLike_HMmdl(stats::coef(object), object, object$k)
   return(logLike)
 }
 
@@ -475,7 +493,11 @@ logLik.HMmdl <- function(object, ...){
 #' 
 #' @export
 logLik.MSARmdl <- function(object, ...){
-  logLike <- logLike_Nmdl(stats::coef(object), object)
+  if (is.null(object$control$Z)){
+    logLike <- logLike_MSARmdl(stats::coef(object), object, object$k)
+  }else{
+    logLike <- logLike_MSARXmdl(stats::coef(object), object, object$k)
+  }
   return(logLike)
 }
 
@@ -491,7 +513,11 @@ logLik.MSARmdl <- function(object, ...){
 #' 
 #' @export
 logLik.MSVARmdl <- function(object, ...){
-  logLike <- logLike_Nmdl(stats::coef(object), object)
+  if (is.null(object$control$Z)){
+    logLike <- logLike_MSVARmdl(stats::coef(object), object, object$k)
+  }else{
+    logLike <- logLike_MSVARXmdl(stats::coef(object), object, object$k)  
+  }
   return(logLike)
 }
 
@@ -738,7 +764,11 @@ getHessian.Nmdl <- function(mdl){
 #' 
 #' @export
 getHessian.ARmdl <- function(mdl){
-  hess <- numDeriv::hessian(logLike_ARmdl, mdl$theta, method = "Richardson", mdl = mdl) 
+  if (is.null(mdl$control$Z)){
+    hess <- numDeriv::hessian(logLike_ARmdl, mdl$theta, method = "Richardson", mdl = mdl)   
+  }else{
+    hess <- numDeriv::hessian(logLike_ARXmdl, mdl$theta, method = "Richardson", mdl = mdl)   
+  }
   return(hess)
 }
 
@@ -754,7 +784,11 @@ getHessian.ARmdl <- function(mdl){
 #' 
 #' @export
 getHessian.VARmdl <- function(mdl){
-  hess <- numDeriv::hessian(logLike_VARmdl, mdl$theta, method = "Richardson", mdl = mdl) 
+  if (is.null(mdl$control$Z)){
+    hess <- numDeriv::hessian(logLike_VARmdl, mdl$theta, method = "Richardson", mdl = mdl) 
+  }else{
+    hess <- numDeriv::hessian(logLike_VARXmdl, mdl$theta, method = "Richardson", mdl = mdl) 
+  }
   return(hess)
 }
 
@@ -786,7 +820,11 @@ getHessian.HMmdl <- function(mdl){
 #' 
 #' @export
 getHessian.MSARmdl <- function(mdl){
-  hess <- numDeriv::hessian(logLike_MSARmdl, mdl$theta, method = "Richardson", mdl = mdl, k = mdl$k) 
+  if (is.null(mdl$control$Z)){
+    hess <- numDeriv::hessian(logLike_MSARmdl, mdl$theta, method = "Richardson", mdl = mdl, k = mdl$k) 
+  }else{
+    hess <- numDeriv::hessian(logLike_MSARXmdl, mdl$theta, method = "Richardson", mdl = mdl, k = mdl$k) 
+  }
   return(hess)
 }
 
@@ -802,7 +840,11 @@ getHessian.MSARmdl <- function(mdl){
 #' 
 #' @export
 getHessian.MSVARmdl <- function(mdl){
-  hess <- numDeriv::hessian(logLike_MSVARmdl, mdl$theta, method = "Richardson", mdl = mdl, k = mdl$k) 
+  if (is.null(mdl$control$Z)){
+    hess <- numDeriv::hessian(logLike_MSVARmdl, mdl$theta, method = "Richardson", mdl = mdl, k = mdl$k) 
+  }else{
+    hess <- numDeriv::hessian(logLike_MSVARXmdl, mdl$theta, method = "Richardson", mdl = mdl, k = mdl$k) 
+  }
   return(hess)
 }
 
@@ -1619,7 +1661,7 @@ predict.ARmdl <- function(object, ..., h = 10){
     Mn <- diag(object$q)
   }
   # E[Y(t)-mu|It]
-  Yt <- t(object$x[object$n,,drop=F]) - object$mu
+  Yt <- t(object$x[object$n,,drop=F]) - c(object$mu)
   # E[Y(t+h)|It]
   predictvals <- matrix(0,h,object$q)
   for (xh in 1:h){
@@ -1793,6 +1835,22 @@ plot.simuAR <- function(x, ...){
                     xlab ="Time", main = "Time series of simulated process")   
 }
 
+#' @title Plot of a \code{simuARX} object
+#'
+#' @description This is a method for the function \code{plot()} for objects of the class \code{simuAR}.
+#' 
+#' @inheritParams base::plot
+#'
+#' @return The \code{simuARX} object is returned invisibly.
+#' 
+#' @keywords internal
+#' 
+#' @export
+plot.simuARX <- function(x, ...){
+  graphics::matplot(1:x$n, x$y, type = "l", ylab = "Simulated process", 
+                    xlab ="Time", main = "Time series of simulated process")   
+}
+
 
 #' @title Plot of a \code{simuVAR} object
 #'
@@ -1806,6 +1864,22 @@ plot.simuAR <- function(x, ...){
 #' 
 #' @export
 plot.simuVAR <- function(x, ...){
+  graphics::matplot(1:x$n, x$y, type = "l", ylab = "Simulated processes", 
+                    xlab ="Time", main = "Time series of simulated processes")   
+}
+
+#' @title Plot of a \code{simuVARX} object
+#'
+#' @description This is a method for the function \code{plot()} for objects of the class \code{simuVAR}.
+#' 
+#' @inheritParams base::plot
+#'
+#' @return The \code{simuVARX} object is returned invisibly.
+#' 
+#' @keywords internal
+#' 
+#' @export
+plot.simuVARX <- function(x, ...){
   graphics::matplot(1:x$n, x$y, type = "l", ylab = "Simulated processes", 
                     xlab ="Time", main = "Time series of simulated processes")   
 }
@@ -1860,6 +1934,26 @@ plot.simuMSAR <- function(x, ...){
 }
 
 
+#' @title Plot of a \code{simuMSARX} object
+#'
+#' @description This is a method for the function \code{plot()} for objects of the class \code{simuMSAR}.
+#' 
+#' @inheritParams base::plot
+#'
+#' @return The \code{simuMSARX} object is returned invisibly.
+#' 
+#' @keywords internal
+#' 
+#' @export
+plot.simuMSARX <- function(x, ...){
+  oldpar <- graphics::par(no.readonly = TRUE)
+  on.exit(graphics::par(oldpar)) 
+  graphics::par(mfrow=c(2,1))
+  graphics::matplot(1:x$n, x$y, type = "l", ylab = "Simulated process", 
+                    xlab ="Time", main = "Time series of simulated process")   
+  graphics::matplot(1:x$n, x$St+1, type = "l", ylab = "State (St)", xlab ="Time",)
+}
+
 #' @title Plot of a \code{simuMSVAR} object
 #'
 #' @description This is a method for the function \code{plot()} for objects of the class \code{simuMSVAR}.
@@ -1880,6 +1974,25 @@ plot.simuMSVAR <- function(x, ...){
   graphics::matplot(1:x$n, x$St+1, type = "l", ylab = "State (St)", xlab ="Time",)
 }
 
+#' @title Plot of a \code{simuMSVARX} object
+#'
+#' @description This is a method for the function \code{plot()} for objects of the class \code{simuMSVAR}.
+#' 
+#' @inheritParams base::plot
+#'
+#' @return The \code{simuMSVARX} object is returned invisibly.
+#' 
+#' @keywords internal
+#' 
+#' @export
+plot.simuMSVARX <- function(x, ...){
+  oldpar <- graphics::par(no.readonly = TRUE)
+  on.exit(graphics::par(oldpar)) 
+  graphics::par(mfrow=c(2,1))
+  graphics::matplot(1:x$n, x$y, type = "l", ylab = "Simulated processes", 
+                    xlab ="Time", main = "Time series of simulated processes")   
+  graphics::matplot(1:x$n, x$St+1, type = "l", ylab = "State (St)", xlab ="Time",)
+}
 
 
 

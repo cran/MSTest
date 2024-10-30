@@ -4,12 +4,14 @@
 \alias{HMmdl}
 \title{Hidden Markov model}
 \usage{
-HMmdl(Y, k, control = list())
+HMmdl(Y, k, Z = NULL, control = list())
 }
 \arguments{
 \item{Y}{a \code{(T x q)} matrix of observations.}
 
 \item{k}{integer determining the number of regimes to use in estimation. Must be greater than or equal to \code{2}.}
+
+\item{Z}{an otpional  \code{(T x qz)} matrix of exogenous regressors. Default is NULL.}
 
 \item{control}{List with model options including:
 \itemize{
@@ -17,7 +19,7 @@ HMmdl(Y, k, control = list())
  \item msmu: Boolean. If \code{TRUE} model is estimated with switch in mean. If \code{FALSE} model is estimated with constant mean. Default is \code{TRUE}.
  \item msvar: Boolean. If \code{TRUE} model is estimated with switch in variance. If \code{FALSE} model is estimated with constant variance. Default is \code{TRUE}.
  \item init_theta: vector of initial values. vector must contain \code{(1 x q)} vector \code{mu}, \code{vech(sigma)}, and \code{vec(P)} where sigma is a \code{(q x q)} covariance matrix.This is optional. Default is \code{NULL}, in which case \code{\link{initVals_MSARmdl}} is used to generate initial values.
- \item method: string determining which method to use. Options are \code{'EM'} for EM algorithm or \code{'MLE'} for Maximum Likelihood Estimation.
+ \item method: string determining which method to use. Options are \code{'EM'} for EM algorithm or \code{'MLE'} for Maximum Likelihood Estimation. Default is \code{'EM'}.
  \item maxit: integer determining the maximum number of EM iterations.
  \item thtol: double determining the convergence criterion for the absolute difference in parameter estimates \code{theta} between iterations. Default is \code{1e-6}.
  \item maxit_converge: integer determining the maximum number of initial values attempted until solution is finite. For example, if parameters in \code{theta} or \code{logLike} are \code{NaN} another set of initial values (up to \code{maxit_converge}) is attempted until finite values are returned. This does not occur frequently for most types of data but may be useful in some cases. Once finite values are obtained, this counts as one iteration towards \code{use_diff_init}. Default is \code{500}.
@@ -34,13 +36,16 @@ List of class \code{HMmdl} (\code{S3} object) with model attributes including:
   \item fitted: a \code{(T x q)} matrix of fitted values.
   \item resid: a \code{(T x q)} matrix of residuals.
   \item mu: a \code{(k x q)} matrix of estimated means of each process.
-  \item stdev: List with \code{k} \code{(q x 1)} vector of estimated standard deviation of each process.
-  \item sigma: List with \code{k} \code{(q x q)} estimated covariance matrix.
+  \item beta: if \code{q=1}, this is a \code{((1 + qz) x k)} matrix of estimated coefficients. If \code{q>1}, this is a list containing \code{k} separate \code{((1 + qz) x q)} matrix of estimated coefficients for each regime.  
+  \item betaZ: a \code{(qz x q)} matrix of estimated exogenous regressor coefficients.
+  \item intercept: a \code{(k x q)} matrix of estimated intercept of each process. If Z is Null, this is the same as mu.
+  \item stdev: If \code{q=1}, this is a \code{(k x 1)} matrix with estimated standard. If \code{q>1}, this is a List with \code{k} \code{(q x q)} matrices with estimated standard deviation on the diagonal.
+  \item sigma: If \code{q=1}, this is a \code{(k x 1)} matrix with variances. If \code{q>1}, this is a List with \code{k} \code{(q x q)} estimated covariance matrix.
   \item theta: vector containing: \code{mu} and \code{vech(sigma)}.
   \item theta_mu_ind: vector indicating location of mean with \code{1} and \code{0} otherwise.
   \item theta_sig_ind: vector indicating location of variance and covariances with \code{1} and \code{0} otherwise.
   \item theta_var_ind: vector indicating location of variances with \code{1} and \code{0} otherwise.
-  \item theta_var_ind: vector indicating location of transition matrix elements with \code{1} and \code{0} otherwise.
+  \item theta_P_ind: vector indicating location of transition matrix elements with \code{1} and \code{0} otherwise.
   \item n: number of observations (same as \code{T}).
   \item q: number of series.
   \item k: number of regimes in estimated model.

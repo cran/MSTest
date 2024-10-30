@@ -80,14 +80,12 @@ chpStat <- function(mdl, rho_b, ltmt, msvar) {
 #' 
 #' @return Bootstrap critical values
 #' 
-#' @keywords internal
-#' 
 #' @references Carrasco, Marine, Liang Hu, and Werner Ploberger. 2014. “Optimal 
 #' test for Markov switching parameters.” \emph{Econometrica} 82 (2): 765–784.
 #' 
 #' @export
-bootCV <- function(mdl, rho_b, N, msvar) {
-    .Call(`_MSTest_bootCV`, mdl, rho_b, N, msvar)
+CHPbootCV <- function(mdl, rho_b, N, msvar) {
+    .Call(`_MSTest_CHPbootCV`, mdl, rho_b, N, msvar)
 }
 
 #' @title Likelihood ratio test statistic sample distribution
@@ -106,8 +104,8 @@ bootCV <- function(mdl, rho_b, N, msvar) {
 #' @keywords internal
 #' 
 #' @export
-simuMdl <- function(mdl_h0, p, q, k, burnin) {
-    .Call(`_MSTest_simuMdl`, mdl_h0, p, q, k, burnin)
+simuMdl <- function(mdl_h0, p, q, k, burnin, exog) {
+    .Call(`_MSTest_simuMdl`, mdl_h0, p, q, k, burnin, exog)
 }
 
 #' @title Change model List with new parameters
@@ -128,8 +126,8 @@ simuMdl <- function(mdl_h0, p, q, k, burnin) {
 #' @keywords internal
 #' 
 #' @export
-mdledit <- function(mdl_h0, theta_h0, p, q, k0) {
-    .Call(`_MSTest_mdledit`, mdl_h0, theta_h0, p, q, k0)
+mdledit <- function(mdl_h0, theta_h0, p, q, k0, exog) {
+    .Call(`_MSTest_mdledit`, mdl_h0, theta_h0, p, q, k0, exog)
 }
 
 #' @title Computes test stat using new parameter vectors
@@ -148,8 +146,8 @@ mdledit <- function(mdl_h0, theta_h0, p, q, k0) {
 #' @keywords internal
 #' 
 #' @export
-compu_tstat <- function(theta_h0, mdl_h0, LT_h1, p, q, k0) {
-    .Call(`_MSTest_compu_tstat`, theta_h0, mdl_h0, LT_h1, p, q, k0)
+compu_tstat <- function(theta_h0, mdl_h0, LT_h1, p, q, k0, exog) {
+    .Call(`_MSTest_compu_tstat`, theta_h0, mdl_h0, LT_h1, p, q, k0, exog)
 }
 
 #' @title Likelihood Ratio Test Statistic Sample Distribution
@@ -171,8 +169,8 @@ compu_tstat <- function(theta_h0, mdl_h0, LT_h1, p, q, k0) {
 #' @references Rodriguez Rondon, Gabriel and Jean-Marie Dufour. 2022. “Monte Carlo Likelihood Ratio Tests for Markov Switching Models.” \emph{Unpublished manuscript}.
 #' 
 #' @export
-LR_samp_dist <- function(mdl_h0, k1, N, burnin, mdl_h0_control, mdl_h1_control) {
-    .Call(`_MSTest_LR_samp_dist`, mdl_h0, k1, N, burnin, mdl_h0_control, mdl_h1_control)
+LR_samp_dist <- function(mdl_h0, k1, N, burnin, Z, mdl_h0_control, mdl_h1_control) {
+    .Call(`_MSTest_LR_samp_dist`, mdl_h0, k1, N, burnin, Z, mdl_h0_control, mdl_h1_control)
 }
 
 #' @title Monte Carlo Likelihood Ratio Test P-value Function 
@@ -197,8 +195,8 @@ LR_samp_dist <- function(mdl_h0, k1, N, burnin, mdl_h0_control, mdl_h1_control) 
 #' @keywords internal
 #' 
 #' @export
-MMCLRpval_fun <- function(theta_h0, mdl_h0, k1, LT_h1, N, burnin, workers, lambda, stationary_constraint, thtol, mdl_h0_control, mdl_h1_control) {
-    .Call(`_MSTest_MMCLRpval_fun`, theta_h0, mdl_h0, k1, LT_h1, N, burnin, workers, lambda, stationary_constraint, thtol, mdl_h0_control, mdl_h1_control)
+MMCLRpval_fun <- function(theta_h0, mdl_h0, k1, LT_h1, N, burnin, workers, lambda, stationary_constraint, thtol, Z, exog, mdl_h0_control, mdl_h1_control) {
+    .Call(`_MSTest_MMCLRpval_fun`, theta_h0, mdl_h0, k1, LT_h1, N, burnin, workers, lambda, stationary_constraint, thtol, Z, exog, mdl_h0_control, mdl_h1_control)
 }
 
 #' @title Monte Carlo Likelihood Ratio Test P-value Function 
@@ -223,8 +221,8 @@ MMCLRpval_fun <- function(theta_h0, mdl_h0, k1, LT_h1, N, burnin, workers, lambd
 #' @keywords internal
 #' 
 #' @export
-MMCLRpval_fun_min <- function(theta, mdl_h0, k1, LT_h1, N, burnin, workers, lambda, stationary_constraint, thtol, mdl_h0_control, mdl_h1_control) {
-    .Call(`_MSTest_MMCLRpval_fun_min`, theta, mdl_h0, k1, LT_h1, N, burnin, workers, lambda, stationary_constraint, thtol, mdl_h0_control, mdl_h1_control)
+MMCLRpval_fun_min <- function(theta, mdl_h0, k1, LT_h1, N, burnin, workers, lambda, stationary_constraint, thtol, Z, exog, mdl_h0_control, mdl_h1_control) {
+    .Call(`_MSTest_MMCLRpval_fun_min`, theta, mdl_h0, k1, LT_h1, N, burnin, workers, lambda, stationary_constraint, thtol, Z, exog, mdl_h0_control, mdl_h1_control)
 }
 
 #' @title Moment-based test statistics 
@@ -469,6 +467,26 @@ paramList_MSARmdl <- function(theta, p, k, msmu, msvar) {
     .Call(`_MSTest_paramList_MSARmdl`, theta, p, k, msmu, msvar)
 }
 
+#' @title Parameter list for Markov-switching ARX model
+#' 
+#' @description This function takes the parameter vector of interest and converts it to a list with specific parameter vectors needed for univariate Markov-switching functions.
+#' 
+#' @param theta Vector of parameters.
+#' @param p Number of autoregressive lags.
+#' @param k Number of regimes.
+#' @param qz Number of exogenous variables.
+#' @param msmu Boolean indicating if the mean switches with regime.
+#' @param msvar Boolean indicating if the variance switches with regime. 
+#' 
+#' @return List with the mean, variance, transition matrix, limiting probabilities, and a vector of state indicators.
+#' 
+#' @keywords internal
+#' 
+#' @export
+paramList_MSARXmdl <- function(theta, p, k, qz, msmu, msvar) {
+    .Call(`_MSTest_paramList_MSARXmdl`, theta, p, k, qz, msmu, msvar)
+}
+
 #' @title Parameter list for Markov-switching vector autoregressive model
 #' 
 #' @description This function takes the parameter vector of interest and converts it to a list with specific parameter vectors needed for multivariate Markov-switching functions.
@@ -489,6 +507,27 @@ paramList_MSVARmdl <- function(theta, q, p, k, msmu, msvar) {
     .Call(`_MSTest_paramList_MSVARmdl`, theta, q, p, k, msmu, msvar)
 }
 
+#' @title Parameter list for Markov-switching VARX model
+#' 
+#' @description This function takes the parameter vector of interest and converts it to a list with specific parameter vectors needed for multivariate Markov-switching functions.
+#' 
+#' @param theta Vector of parameters.
+#' @param q Number of time series.
+#' @param p Number of autoregressive lags.
+#' @param k Number of regimes.
+#' @param qz Number of exogenous variables.
+#' @param msmu Boolean indicating if the mean switches with regime.
+#' @param msvar Boolean indicating if the variance switches with regime. 
+#' 
+#' @return List with the mean, variance, transition matrix, limiting probabilities, and a vector of state indicators.
+#' 
+#' @keywords internal
+#' 
+#' @export
+paramList_MSVARXmdl <- function(theta, q, p, k, qz, msmu, msvar) {
+    .Call(`_MSTest_paramList_MSVARXmdl`, theta, q, p, k, qz, msmu, msvar)
+}
+
 #' @title Markov-switching autoregressive model residuals
 #' 
 #' @description This function computes residuals of a Markov-switching autoregressive model.
@@ -506,6 +545,23 @@ calcResid_MSARmdl <- function(mdl, mu, k) {
     .Call(`_MSTest_calcResid_MSARmdl`, mdl, mu, k)
 }
 
+#' @title Markov-switching autoregressive model residuals
+#' 
+#' @description This function computes residuals of a Markov-switching autoregressive model.
+#' 
+#' @param mdl List containing relevant parameters.
+#' @param mu Vector with mean in each regime.
+#' @param k number of regimes. Must be greater than or equal to \code{2}. 
+#' 
+#' @return A (\code{TxM}) matrix of residuals in each regime \code{M} where \code{M=k^(ar+1)}.
+#' 
+#' @keywords internal
+#' 
+#' @export
+calcResid_MSARXmdl <- function(mdl, mu, k) {
+    .Call(`_MSTest_calcResid_MSARXmdl`, mdl, mu, k)
+}
+
 #' @title Markov-switching vector autoregressive model residuals
 #' 
 #' @description This function computes residuals of a Markov-switching vector autoregressive model. 
@@ -521,6 +577,23 @@ calcResid_MSARmdl <- function(mdl, mu, k) {
 #' @export
 calcResid_MSVARmdl <- function(mdl, mu, k) {
     .Call(`_MSTest_calcResid_MSVARmdl`, mdl, mu, k)
+}
+
+#' @title Markov-switching VARX model residuals
+#' 
+#' @description This function computes residuals of a Markov-switching VARX model. 
+#' 
+#' @param mdl List containing relevant parameters.
+#' @param mu Vector with mean in each regime.
+#' @param k Number of regimes. Must be greater than or equal to \code{2}. 
+#' 
+#' @return List with \code{M} (\code{Txq}) matrices of residuals in each regime \code{M} where \code{M=k^(ar+1)}.
+#' 
+#' @keywords internal
+#' 
+#' @export
+calcResid_MSVARXmdl <- function(mdl, mu, k) {
+    .Call(`_MSTest_calcResid_MSVARXmdl`, mdl, mu, k)
 }
 
 #' @title Initial values for Hidden Markov model
@@ -568,6 +641,30 @@ initVals_MSARmdl <- function(mdl, k) {
     .Call(`_MSTest_initVals_MSARmdl`, mdl, k)
 }
 
+#' @title Initial values for Markov-switching ARX model
+#' 
+#' @description This function generates a random parameter vector to be used as initial values for a Markov-switching ARX model.
+#' 
+#' @param mdl List with parameter values of simple (one-regime) autoregressive model. This includes:
+#' \itemize{
+#'   \item phi: Vector autoregressive coefficients.
+#'   \item mu: Mean of process.
+#'   \item betaZ: vector of coefficients for exogenous regressors
+#'   \item stdev: Standard deviation.
+#'   \item msmu: Boolean indicator. If \code{TRUE}, mean is function of markov process. If \code{FALSE}, mean is constant across regimes.
+#'   \item msvar: Boolean indicator. If \code{TRUE}, standard deviation is function of markov process. If \code{FALSE}, standard deviation is constant across regimes.
+#' }
+#' @param k Number of regimes.
+#' 
+#' @return Vector of initial parameter values.
+#' 
+#' @keywords internal
+#' 
+#' @export
+initVals_MSARXmdl <- function(mdl, k) {
+    .Call(`_MSTest_initVals_MSARXmdl`, mdl, k)
+}
+
 #' @title Initial values for Markov-switching vector autoregressive model
 #' 
 #' @description This function generates a random parameter vector to be used as initial values for a Markov-switching vector autoregressive model.
@@ -589,6 +686,30 @@ initVals_MSARmdl <- function(mdl, k) {
 #' @export
 initVals_MSVARmdl <- function(mdl, k) {
     .Call(`_MSTest_initVals_MSVARmdl`, mdl, k)
+}
+
+#' @title Initial values for Markov-switching VARX model
+#' 
+#' @description This function generates a random parameter vector to be used as initial values for a Markov-switching VARX model.
+#' 
+#' @param mdl List with parameter values of simple (one-regime) VARX model. This includes:
+#'   \itemize{
+#'    \item phi: Matrix autoregressive coefficients.
+#'    \item mu: Vector of means.
+#'    \item betaZ: vector of coefficients for exogenous regressors
+#'    \item sigma: Covariance matrix.
+#'    \item msmu: Boolean indicator. If \code{TRUE}, mean is function of markov process. If \code{FALSE}, mean is constant across regimes.
+#'    \item msvar: Boolean indicator. If \code{TRUE}, standard deviation is function of markov process. If \code{FALSE}, standard deviation is constant across regimes.
+#' }
+#' @param k Number of regimes.
+#' 
+#' @return Vector of initial parameter values.
+#' 
+#' @keywords internal
+#' 
+#' @export
+initVals_MSVARXmdl <- function(mdl, k) {
+    .Call(`_MSTest_initVals_MSVARXmdl`, mdl, k)
 }
 
 #' @title Monte Carlo P-value
@@ -633,7 +754,7 @@ randSN <- function(n, q) {
 #' \itemize{
 #'   \item n: Length of series.
 #'   \item mu: Mean of process.
-#'   \item sigma: Standard deviation of process.
+#'   \item sigma: variance of process.
 #'   \item phi: Vector of autoregressive coefficients.
 #'   \item eps: An optional (\code{T+burnin x q}) matrix with standard normal errors to be used. Errors will be generated if not provided.
 #' }
@@ -648,6 +769,31 @@ simuAR_cpp <- function(mdl_h0, burnin = 100L) {
     .Call(`_MSTest_simuAR_cpp`, mdl_h0, burnin)
 }
 
+#' @title Simulate autoregressive process with exogenous regressors
+#' 
+#' @description This function simulates an ARX process.
+#' 
+#' @param mdl_h0 List containing the following DGP parameters
+#' \itemize{
+#'   \item n: Length of series.
+#'   \item mu: Mean of process.
+#'   \item sigma: variance of process.
+#'   \item phi: Vector of autoregressive coefficients.
+#'   \item eps: An optional (\code{T+burnin x q}) matrix with standard normal errors to be used. Errors will be generated if not provided.
+#'   \item Z: A (\code{T x qz}) matrix with exogenous regressors (Optional) and where qz is the number of exogenous variables.
+#'   \item betaZ: A (\code{qz x 1}) matrix  true coefficients on exogenous regressors (Optional) and where qz is the number of exogenous variables.
+#' }
+#' @param burnin Number of simulated observations to remove from beginning. Default is \code{100}.
+#' 
+#' @return List with simulated autoregressive series and its DGP parameters.
+#' 
+#' @keywords internal
+#' 
+#' @export
+simuARX_cpp <- function(mdl_h0, burnin = 100L) {
+    .Call(`_MSTest_simuARX_cpp`, mdl_h0, burnin)
+}
+
 #' @title Simulate Markov-switching autoregressive process
 #' 
 #' @description This function simulates a Markov-switching autoregressive process.
@@ -657,7 +803,7 @@ simuAR_cpp <- function(mdl_h0, burnin = 100L) {
 #'   \item n: Length of series.
 #'   \item k: Number of regimes.
 #'   \item mu: A (\code{k x 1}) vector with mean of process in each regime.
-#'   \item sigma: A (\code{k x 1}) vector with standard deviation of process in each regime.
+#'   \item sigma: A (\code{k x 1}) vector with variance of process in each regime.
 #'   \item phi: Vector of autoregressive coefficients.
 #'   \item P: A (\code{k x k}) transition matrix (columns must sum to one).
 #'   \item eps: An optional (\code{T+burnin x q}) matrix with standard normal errors to be used. Errors will be generated if not provided.
@@ -671,6 +817,33 @@ simuAR_cpp <- function(mdl_h0, burnin = 100L) {
 #' @export
 simuMSAR_cpp <- function(mdl_h0, burnin = 100L) {
     .Call(`_MSTest_simuMSAR_cpp`, mdl_h0, burnin)
+}
+
+#' @title Simulate Markov-switching ARX process
+#' 
+#' @description This function simulates a Markov-switching ARX process.
+#' 
+#' @param mdl_h0 List containing the following DGP parameters
+#' \itemize{
+#'   \item n: Length of series.
+#'   \item k: Number of regimes.
+#'   \item mu: A (\code{k x 1}) vector with mean of process in each regime.
+#'   \item sigma: A (\code{k x 1}) vector with variance of process in each regime.
+#'   \item phi: Vector of autoregressive coefficients.
+#'   \item P: A (\code{k x k}) transition matrix (columns must sum to one).
+#'   \item eps: An optional (\code{T+burnin x q}) matrix with standard normal errors to be used. Errors will be generated if not provided.
+#'   \item Z: A (\code{T x qz}) matrix with exogenous regressors (Optional) and where qz is the number of exogenous variables.
+#'   \item betaZ: A (\code{qz x 1}) matrix  true coefficients on exogenous regressors (Optional) and where qz is the number of exogenous variables.
+#' }
+#' @param burnin Number of simulated observations to remove from beginning. Default is \code{100}.
+#' 
+#' @return List with simulated Markov-switching autoregressive process and its DGP properties.
+#' 
+#' @keywords internal
+#' 
+#' @export
+simuMSARX_cpp <- function(mdl_h0, burnin = 100L) {
+    .Call(`_MSTest_simuMSARX_cpp`, mdl_h0, burnin)
 }
 
 #' @title Simulate VAR process
@@ -696,6 +869,33 @@ simuMSAR_cpp <- function(mdl_h0, burnin = 100L) {
 #' @export
 simuVAR_cpp <- function(mdl_h0, burnin = 100L) {
     .Call(`_MSTest_simuVAR_cpp`, mdl_h0, burnin)
+}
+
+#' @title Simulate VARX process
+#' 
+#' @description This function simulates a VARX process.
+#' 
+#' @param mdl_h0 List containing the following DGP parameters
+#' \itemize{
+#'   \item n: Length of series.
+#'   \item mu: A (\code{q x 1}) vector of means.
+#'   \item sigma: A (\code{q x q}) covariance matrix.
+#'   \item phi:  A (\code{q x qp}) matrix of autoregressive coefficients.
+#'   \item p: Number of autoregressive lags.
+#'   \item q: Number of series.
+#'   \item eps: An optional (\code{T+burnin x q}) matrix with standard normal errors to be used. Errors will be generated if not provided.
+#'   \item Z: A (\code{T x qz}) matrix with exogenous regressors (Optional) and where qz is the number of exogenous variables.
+#'   \item betaZ: A (\code{qz x q}) matrix  true coefficients on exogenous regressors (Optional) and where qz is the number of exogenous variables.
+#' }
+#' @param burnin Number of simulated observations to remove from beginning. Default is \code{100}.
+#' 
+#' @return List with simulated vector autoregressive series and its DGP parameters.
+#' 
+#' @keywords internal
+#' 
+#' @export
+simuVARX_cpp <- function(mdl_h0, burnin = 100L) {
+    .Call(`_MSTest_simuVARX_cpp`, mdl_h0, burnin)
 }
 
 #' @title Simulate Markov-switching vector autoregressive process
@@ -725,6 +925,35 @@ simuMSVAR_cpp <- function(mdl_h0, burnin = 100L) {
     .Call(`_MSTest_simuMSVAR_cpp`, mdl_h0, burnin)
 }
 
+#' @title Simulate Markov-switching VARX process
+#' 
+#' @description This function simulates a Markov-switching VARX process.
+#' 
+#' @param mdl_h0 List containing the following DGP parameters
+#' \itemize{
+#'   \item n: Length of series.
+#'   \item k: Number of regimes.
+#'   \item mu: A (\code{k x q}) matrix of means.
+#'   \item sigma: List with \code{k} (\code{q x q}) covariance matrices.
+#'   \item phi: A (\code{q x qp}) matrix of autoregressive coefficients.
+#'   \item p: Number of autoregressive lags.
+#'   \item q: Number of series.
+#'   \item P: A (\code{k x k}) transition matrix (columns must sum to one).
+#'   \item eps: An optional (\code{T+burnin x q}) matrix with standard normal errors to be used. Errors will be generated if not provided.
+#'   \item Z: A (\code{T x qz}) matrix with exogenous regressors (Optional) and where qz is the number of exogenous variables.
+#'   \item betaZ: A (\code{qz x q}) matrix  true coefficients on exogenous regressors (Optional) and where qz is the number of exogenous variables.
+#' }
+#' @param burnin Number of simulated observations to remove from beginning. Default is \code{100}.
+#' 
+#' @return List with simulated vector autoregressive series and its DGP parameters.
+#' 
+#' @keywords internal
+#' 
+#' @export
+simuMSVARX_cpp <- function(mdl_h0, burnin = 100L) {
+    .Call(`_MSTest_simuMSVARX_cpp`, mdl_h0, burnin)
+}
+
 #' @title Simulate normally distributed process
 #' 
 #' @description This function simulates a normally distributed process.
@@ -736,16 +965,19 @@ simuMSVAR_cpp <- function(mdl_h0, burnin = 100L) {
 #'   \item sigma: A (\code{q x q}) covariance matrix.
 #'   \item q: Number of series.
 #'   \item eps: An optional (\code{T+burnin x q}) matrix with standard normal errors to be used. Errors will be generated if not provided.
+#'   \item Z: A (\code{T x qz}) matrix with exogenous regressors (Optional) and where qz is the number of exogenous variables.
+#'   \item betaZ: A (\code{qz x q}) matrix  true coefficients on exogenous regressors (Optional) and where qz is the number of exogenous variables.
 #' }
 #' @param burnin Number of simulated observations to remove from beginning. Default is \code{100}.
+#' @param exog bool determining if there are exogenous variables (\code{true}) or not (\code{false}). Default is \code{false}.
 #' 
 #' @return List with simulated series and its DGP parameters.
 #' 
 #' @keywords internal
 #' 
 #' @export
-simuNorm_cpp <- function(mdl_h0, burnin = 0L) {
-    .Call(`_MSTest_simuNorm_cpp`, mdl_h0, burnin)
+simuNorm_cpp <- function(mdl_h0, burnin = 0L, exog = FALSE) {
+    .Call(`_MSTest_simuNorm_cpp`, mdl_h0, burnin, exog)
 }
 
 #' @title Simulate Hidden Markov model with normally distributed errors
@@ -761,16 +993,19 @@ simuNorm_cpp <- function(mdl_h0, burnin = 0L) {
 #'   \item q: Number of series.
 #'   \item P: A (\code{k x k}) transition matrix (columns must sum to one).
 #'   \item eps: An optional (\code{T+burnin x q}) matrix with standard normal errors to be used. Errors will be generated if not provided.
+#'   \item Z: A (\code{T x qz}) matrix with exogenous regressors (Optional) and where qz is the number of exogenous variables.
+#'   \item betaZ: A (\code{qz x q}) matrix true coefficients on exogenous regressors (Optional) and where qz is the number of exogenous variables.
 #' }
 #' @param burnin Number of simulated observations to remove from beginning. Default is \code{100}.
+#' @param exog bool determining if there are exogenous variables (\code{true}) or not (\code{false}). Default is \code{false}.
 #' 
 #' @return List with simulated series and its DGP parameters.
 #' 
 #' @keywords internal
 #' 
 #' @export
-simuHMM_cpp <- function(mdl_h0, burnin = 100L) {
-    .Call(`_MSTest_simuHMM_cpp`, mdl_h0, burnin)
+simuHMM_cpp <- function(mdl_h0, burnin = 100L, exog = FALSE) {
+    .Call(`_MSTest_simuHMM_cpp`, mdl_h0, burnin, exog)
 }
 
 #' @title Normal log-likelihood objective function 
@@ -805,6 +1040,22 @@ logLike_ARmdl <- function(theta, mdl) {
     .Call(`_MSTest_logLike_ARmdl`, theta, mdl)
 }
 
+#' @title ARX log-likelihood objective function
+#' 
+#' @description This function computes the log-likelihood for an autoregressive model with exogenous regressors.
+#' 
+#' @param theta Vector of model parameters.
+#' @param mdl List with model attributes.
+#' 
+#' @return Log-likelihood value.
+#' 
+#' @keywords internal
+#' 
+#' @export
+logLike_ARXmdl <- function(theta, mdl) {
+    .Call(`_MSTest_logLike_ARXmdl`, theta, mdl)
+}
+
 #' @title Vector autoregressive log-likelihood objective function 
 #' 
 #' @description This function computes the log-likelihood for a vector autoregressive model.
@@ -819,6 +1070,22 @@ logLike_ARmdl <- function(theta, mdl) {
 #' @export
 logLike_VARmdl <- function(theta, mdl) {
     .Call(`_MSTest_logLike_VARmdl`, theta, mdl)
+}
+
+#' @title VARX log-likelihood objective function 
+#' 
+#' @description This function computes the log-likelihood for a VARX model.
+#' 
+#' @param theta Vector of model parameters.
+#' @param mdl List with model attributes.
+#' 
+#' @return Log-likelihood value.
+#' 
+#' @keywords internal
+#' 
+#' @export
+logLike_VARXmdl <- function(theta, mdl) {
+    .Call(`_MSTest_logLike_VARXmdl`, theta, mdl)
 }
 
 #' @title Hidden Markov model log-likelihood function 
@@ -872,6 +1139,23 @@ logLike_MSARmdl <- function(theta, mdl, k) {
     .Call(`_MSTest_logLike_MSARmdl`, theta, mdl, k)
 }
 
+#' @title Markov-switching ARX log-likelihood objective function
+#' 
+#' @description This function computes the log-likelihood for a markov-switching ARX model.
+#' 
+#' @param theta Vector of model parameters.
+#' @param mdl List with model attributes.
+#' @param k Integer determining the number of regimes.
+#' 
+#' @return Log-likelihood value.
+#' 
+#' @keywords internal
+#' 
+#' @export
+logLike_MSARXmdl <- function(theta, mdl, k) {
+    .Call(`_MSTest_logLike_MSARXmdl`, theta, mdl, k)
+}
+
 #' @title Markov-switching autoregressive log-likelihood objective function (minimization version)
 #' 
 #' @description This function computes the (negative) log-likelihood for a markov-switching autoregressive model.
@@ -887,6 +1171,23 @@ logLike_MSARmdl <- function(theta, mdl, k) {
 #' @export
 logLike_MSARmdl_min <- function(theta, mdl, k) {
     .Call(`_MSTest_logLike_MSARmdl_min`, theta, mdl, k)
+}
+
+#' @title Markov-switching ARX log-likelihood objective function (minimization version)
+#' 
+#' @description This function computes the (negative) log-likelihood for a markov-switching ARX model.
+#' 
+#' @param theta Vector of model parameters.
+#' @param mdl List with model attributes.
+#' @param k integer determining the number of regimes.
+#' 
+#' @return Negative log-likelihood value.
+#' 
+#' @keywords internal
+#' 
+#' @export
+logLike_MSARXmdl_min <- function(theta, mdl, k) {
+    .Call(`_MSTest_logLike_MSARXmdl_min`, theta, mdl, k)
 }
 
 #' @title Markov-switching vector autoregressive log-likelihood objective function
@@ -906,6 +1207,23 @@ logLike_MSVARmdl <- function(theta, mdl, k) {
     .Call(`_MSTest_logLike_MSVARmdl`, theta, mdl, k)
 }
 
+#' @title Markov-switching VARX log-likelihood objective function
+#' 
+#' @description This function computes the log-likelihood for a markov-switching VARX model.
+#' 
+#' @param theta Vector of model parameters.
+#' @param mdl List with model attributes.
+#' @param k Integer determining the number of regimes.
+#' 
+#' @return Log-likelihood value.
+#' 
+#' @keywords internal
+#' 
+#' @export
+logLike_MSVARXmdl <- function(theta, mdl, k) {
+    .Call(`_MSTest_logLike_MSVARXmdl`, theta, mdl, k)
+}
+
 #' @title Markov-switching vector autoregressive log-likelihood objective function (minimization version)
 #' 
 #' @description This function computes the (negative) log-likelihood for a markov-switching vector autoregressive model
@@ -921,6 +1239,23 @@ logLike_MSVARmdl <- function(theta, mdl, k) {
 #' @export
 logLike_MSVARmdl_min <- function(theta, mdl, k) {
     .Call(`_MSTest_logLike_MSVARmdl_min`, theta, mdl, k)
+}
+
+#' @title Markov-switching VARX log-likelihood objective function (minimization version)
+#' 
+#' @description This function computes the (negative) log-likelihood for a markov-switching VARX model
+#' 
+#' @param theta Vector of model parameters.
+#' @param mdl List with model attributes.
+#' @param k Integer determining the number of regimes.
+#' 
+#' @return Negative log-likelihood value.
+#' 
+#' @keywords internal
+#' 
+#' @export
+logLike_MSVARXmdl_min <- function(theta, mdl, k) {
+    .Call(`_MSTest_logLike_MSVARXmdl_min`, theta, mdl, k)
 }
 
 #' @title Hidden Markov model log-likelihood function 
@@ -957,6 +1292,23 @@ ExpectationM_MSARmdl <- function(theta, mdl, k) {
     .Call(`_MSTest_ExpectationM_MSARmdl`, theta, mdl, k)
 }
 
+#' @title Markov-switching ARX log-likelihood function 
+#' 
+#' @description This function computes the log-likelihood for a markov-switching autoregressive model and uses the Hamilton smoother to obtain smoothed probabilities of each state. This is also the expectation step in the Expectation Maximization algorithm for a Markov-switching ARX model.
+#' 
+#' @param theta Vector of model parameters.
+#' @param mdl List with model attributes.
+#' @param k Integer determining the number of regimes.
+#'  
+#' @return List which includes log-likelihood and smoothed probabilities of each regime.
+#' 
+#' @keywords internal
+#' 
+#' @export
+ExpectationM_MSARXmdl <- function(theta, mdl, k) {
+    .Call(`_MSTest_ExpectationM_MSARXmdl`, theta, mdl, k)
+}
+
 #' @title Markov-switching vector autoregressive log-likelihood function
 #' 
 #' @description This function computes the log-likelihood for a markov-switching vector autoregressive model and uses the Hamilton smoother to obtain smoothed probabilities of each state. This is also the expectation step in the Expectation Maximization algorithm for a Markov-switching autoregressive model.
@@ -972,6 +1324,23 @@ ExpectationM_MSARmdl <- function(theta, mdl, k) {
 #' @export
 ExpectationM_MSVARmdl <- function(theta, mdl, k) {
     .Call(`_MSTest_ExpectationM_MSVARmdl`, theta, mdl, k)
+}
+
+#' @title Markov-switching VARX log-likelihood function
+#' 
+#' @description This function computes the log-likelihood for a markov-switching VARX model and uses the Hamilton smoother to obtain smoothed probabilities of each state. This is also the expectation step in the Expectation Maximization algorithm for a Markov-switching autoregressive model.
+#' 
+#' @param theta Vector of model parameters.
+#' @param mdl List with model attributes.
+#' @param k Integer determining the number of regimes.
+#'  
+#' @return List which includes log-likelihood and smoothed probabilities of each regime.
+#' 
+#' @keywords internal
+#' 
+#' @export
+ExpectationM_MSVARXmdl <- function(theta, mdl, k) {
+    .Call(`_MSTest_ExpectationM_MSVARXmdl`, theta, mdl, k)
 }
 
 #' @title Maximization step of EM algorithm for Hidden Markov model
@@ -1010,6 +1379,24 @@ EMaximization_MSARmdl <- function(theta, mdl, MSloglik_output, k) {
     .Call(`_MSTest_EMaximization_MSARmdl`, theta, mdl, MSloglik_output, k)
 }
 
+#' @title Maximization step of EM algorithm for Markov-switching ARX model
+#' 
+#' @description This function performs the maximization step of the Expectation Maximization algorithm for Markov-switching ARX model.
+#' 
+#' @param theta Vector of model parameters.
+#' @param mdl List with model attributes.
+#' @param MSloglik_output List with output from \code{\link{ExpectationM_MSARmdl}}.
+#' @param k Integer determining the number of regimes.
+#' 
+#' @return List with new maximized parameters.
+#' 
+#' @keywords internal
+#' 
+#' @export
+EMaximization_MSARXmdl <- function(theta, mdl, MSloglik_output, k) {
+    .Call(`_MSTest_EMaximization_MSARXmdl`, theta, mdl, MSloglik_output, k)
+}
+
 #' @title Maximization step of EM algorithm for Markov-switching vector autoregressive model
 #' 
 #' @description This function performs the maximization step of the Expectation Maximization algorithm for Markov-switching vector autoregressive model.
@@ -1026,6 +1413,24 @@ EMaximization_MSARmdl <- function(theta, mdl, MSloglik_output, k) {
 #' @export
 EMaximization_MSVARmdl <- function(theta, mdl, MSloglik_output, k) {
     .Call(`_MSTest_EMaximization_MSVARmdl`, theta, mdl, MSloglik_output, k)
+}
+
+#' @title Maximization step of EM algorithm for Markov-switching VARX model
+#' 
+#' @description This function performs the maximization step of the Expectation Maximization algorithm for Markov-switching VARX model.
+#' 
+#' @param theta Vector of model parameters.
+#' @param mdl List with model attributes.
+#' @param MSloglik_output List with output from \code{\link{ExpectationM_MSVARmdl}}.
+#' @param k Integer determining the number of regimes.
+#'  
+#' @return List with new maximized parameters.
+#' 
+#' @keywords internal
+#' 
+#' @export
+EMaximization_MSVARXmdl <- function(theta, mdl, MSloglik_output, k) {
+    .Call(`_MSTest_EMaximization_MSVARXmdl`, theta, mdl, MSloglik_output, k)
 }
 
 #' @title EM algorithm iteration for Hidden Markov model
@@ -1062,6 +1467,23 @@ EMiter_MSARmdl <- function(mdl, EMest_output, k) {
     .Call(`_MSTest_EMiter_MSARmdl`, mdl, EMest_output, k)
 }
 
+#' @title EM algorithm iteration for Markov-switching ARX model
+#' 
+#' @description This function performs the one iteration (E-step and M-step) of the Expectation Maximization algorithm for Markov-switching ARX model.
+#' 
+#' @param mdl List with model attributes.
+#' @param EMest_output List with attributes from previous iteration.
+#' @param k Integer determining the number of regimes.
+#' 
+#' @return List with attributes from new iteration.
+#' 
+#' @keywords internal
+#' 
+#' @export
+EMiter_MSARXmdl <- function(mdl, EMest_output, k) {
+    .Call(`_MSTest_EMiter_MSARXmdl`, mdl, EMest_output, k)
+}
+
 #' @title EM algorithm iteration for Markov-switching vector autoregressive model
 #' 
 #' @description This function performs the one iteration (E-step and M-step) of the Expectation Maximization algorithm for Markov-switching vector autoregressive model.
@@ -1077,6 +1499,23 @@ EMiter_MSARmdl <- function(mdl, EMest_output, k) {
 #' @export
 EMiter_MSVARmdl <- function(mdl, EMest_output, k) {
     .Call(`_MSTest_EMiter_MSVARmdl`, mdl, EMest_output, k)
+}
+
+#' @title EM algorithm iteration for Markov-switching VARX model
+#' 
+#' @description This function performs the one iteration (E-step and M-step) of the Expectation Maximization algorithm for Markov-switching VARX model.
+#' 
+#' @param mdl List with model attributes.
+#' @param EMest_output List with attributes from previous iteration.
+#' @param k Integer determining the number of regimes.
+#' 
+#' @return List with attributes from new iteration.
+#' 
+#' @keywords internal
+#' 
+#' @export
+EMiter_MSVARXmdl <- function(mdl, EMest_output, k) {
+    .Call(`_MSTest_EMiter_MSVARXmdl`, mdl, EMest_output, k)
 }
 
 #' @title Estimation of Hidden Markov model by EM Algorithm 
@@ -1120,6 +1559,27 @@ MSARmdl_em <- function(theta_0, mdl, k, optim_options) {
     .Call(`_MSTest_MSARmdl_em`, theta_0, mdl, k, optim_options)
 }
 
+#' @title Estimation of Markov-switching ARX model by EM Algorithm 
+#' 
+#' @description Estimate Markov-switching ARX model by EM algorithm. This function is used by \code{\link{MSARmdl}} which organizes the output and takes raw data as input.
+#' 
+#' @param theta_0 vector with initial values for parameters.
+#' @param mdl List with model attributes.
+#' @param k Integer determining the number of regimes.
+#' @param optim_options List with optimization options.
+#' 
+#' @return List with model results.
+#' 
+#' @keywords internal
+#' 
+#' @references Dempster, A. P., N. M. Laird, and D. B. Rubin. 1977. “Maximum Likelihood from Incomplete Data via the EM Algorithm.” \emph{Journal of the Royal Statistical Society}. Series B 39 (1): 1–38.
+#' @references Hamilton, James D. 1990. “Analysis of time series subject to changes in regime.” \emph{Journal of econometrics}, 45 (1-2): 39–70.
+#' 
+#' @export
+MSARXmdl_em <- function(theta_0, mdl, k, optim_options) {
+    .Call(`_MSTest_MSARXmdl_em`, theta_0, mdl, k, optim_options)
+}
+
 #' @title Estimation of Markov-switching vector autoregressive model by EM Algorithm 
 #' 
 #' @description Estimate Markov-switching vector autoregressive model by EM algorithm. This function is used by \code{\link{MSVARmdl}} which organizes the output and takes raw data as input.
@@ -1139,5 +1599,26 @@ MSARmdl_em <- function(theta_0, mdl, k, optim_options) {
 #' @export
 MSVARmdl_em <- function(theta_0, mdl, k, optim_options) {
     .Call(`_MSTest_MSVARmdl_em`, theta_0, mdl, k, optim_options)
+}
+
+#' @title Estimation of Markov-switching VARX model by EM Algorithm 
+#' 
+#' @description Estimate Markov-switching VARX model by EM algorithm. This function is used by \code{\link{MSVARmdl}} which organizes the output and takes raw data as input.
+#' 
+#' @param theta_0 vector with initial values for parameters.
+#' @param mdl List with model attributes.
+#' @param k Integer determining the number of regimes.
+#' @param optim_options List with optimization options.
+#' 
+#' @return List with model results.
+#' 
+#' @keywords internal
+#' 
+#' @references Dempster, A. P., N. M. Laird, and D. B. Rubin. 1977. “Maximum Likelihood from Incomplete Data via the EM Algorithm.” \emph{Journal of the Royal Statistical Society}. Series B 39 (1): 1–38.
+#' @references Krolzig, Hans-Martin. 1997. “The markov-switching vector autoregressive model.”. Springer.
+#' 
+#' @export
+MSVARXmdl_em <- function(theta_0, mdl, k, optim_options) {
+    .Call(`_MSTest_MSVARXmdl_em`, theta_0, mdl, k, optim_options)
 }
 

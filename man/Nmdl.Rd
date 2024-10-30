@@ -4,10 +4,12 @@
 \alias{Nmdl}
 \title{Normal distribution model}
 \usage{
-Nmdl(Y, control = list())
+Nmdl(Y, Z = NULL, control = list())
 }
 \arguments{
 \item{Y}{a \code{(T x q)} matrix of observations.}
+
+\item{Z}{an otpional  \code{(T x qz)} matrix of exogenous regressors. Default is NULL.}
 
 \item{control}{List with model options including:
 \itemize{
@@ -22,9 +24,12 @@ List of class \code{Nmdl} (\code{S3} object) with model attributes including:
   \item fitted: a \code{(T x q)} matrix of fitted values.
   \item resid: a \code{(T x q)} matrix of residuals.
   \item mu: a \code{(1 x q)} vector of estimated means of each process.
+  \item intercept: a \code{(1 x q)} vector of estimated intercept of each process. If Z is NULL, it is the same as mu. 
+  \item beta: a \code{((1 + p + qz) x q)} matrix of estimated coefficients. 
+  \item betaZ: a \code{(qz x q)} matrix of estimated exogenous regressor coefficients (If Z is provided). 
   \item stdev: a \code{(q x 1)} vector of estimated standard deviation of each process.
   \item sigma: a \code{(q x q)} estimated covariance matrix.
-  \item theta: vector containing: \code{mu} and \code{vech(sigma)}.
+  \item theta: vector containing: \code{mu}, \code{betaZ} (if matrix Z is provided), and \code{vech(sigma)}.
   \item theta_mu_ind: vector indicating location of mean with \code{1} and \code{0} otherwise.
   \item theta_sig_ind: vector indicating location of variance and covariances with \code{1} and \code{0} otherwise.
   \item theta_var_ind: vector indicating location of variances with \code{1} and \code{0} otherwise.

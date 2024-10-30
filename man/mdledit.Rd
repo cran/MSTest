@@ -4,7 +4,7 @@
 \alias{mdledit}
 \title{Change model List with new parameters}
 \usage{
-mdledit(mdl_h0, theta_h0, p, q, k0)
+mdledit(mdl_h0, theta_h0, p, q, k0, exog)
 }
 \arguments{
 \item{mdl_h0}{List with restricted model properties.}

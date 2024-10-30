@@ -12,7 +12,7 @@ simuMSAR_cpp(mdl_h0, burnin = 100L)
   \item n: Length of series.
   \item k: Number of regimes.
   \item mu: A (\code{k x 1}) vector with mean of process in each regime.
-  \item sigma: A (\code{k x 1}) vector with standard deviation of process in each regime.
+  \item sigma: A (\code{k x 1}) vector with variance of process in each regime.
   \item phi: Vector of autoregressive coefficients.
   \item P: A (\code{k x k}) transition matrix (columns must sum to one).
   \item eps: An optional (\code{T+burnin x q}) matrix with standard normal errors to be used. Errors will be generated if not provided.

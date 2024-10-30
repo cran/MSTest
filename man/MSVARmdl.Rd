@@ -19,7 +19,7 @@ MSVARmdl(Y, p, k, control = list())
  \item msmu: Boolean. If \code{TRUE} model is estimated with switch in mean. If \code{FALSE} model is estimated with constant mean. Default is \code{TRUE}.
  \item msvar: Boolean. If \code{TRUE} model is estimated with switch in variance. If \code{FALSE} model is estimated with constant variance. Default is \code{TRUE}.
  \item init_theta: vector of initial values. vector must contain \code{(1 x q)} vector \code{mu}, \code{vech(sigma)}, and \code{vec(P)} where sigma is a \code{(q x q)} covariance matrix. This is optional. Default is \code{NULL}, in which case \code{\link{initVals_MSARmdl}} is used to generate initial values.
- \item method: string determining which method to use. Options are \code{'EM'} for EM algorithm or \code{'MLE'} for Maximum Likelihood Estimation.
+ \item method: string determining which method to use. Options are \code{'EM'} for EM algorithm or \code{'MLE'} for Maximum Likelihood Estimation.  Default is \code{'EM'}.
  \item maxit: integer determining the maximum number of EM iterations.
  \item thtol: double determining the convergence criterion for the absolute difference in parameter estimates \code{theta} between iterations. Default is \code{1e-6}.
  \item maxit_converge: integer determining the maximum number of initial values attempted until solution is finite. For example, if parameters in \code{theta} or \code{logLike} are \code{NaN} another set of initial values (up to \code{maxit_converge}) is attempted until finite values are returned. This does not occur frequently for most types of data but may be useful in some cases. Once finite values are obtained, this counts as one iteration towards \code{use_diff_init}. Default is \code{500}.
@@ -36,9 +36,11 @@ List of class \code{MSVARmdl} (\code{S3} object) with model attributes including
   \item y: a \code{(T-p x q)} matrix of observations.
   \item X: a \code{(T-p x p*q + const)} matrix of lagged observations with a leading column of \code{1}s.
   \item x: a \code{(T-p x p*q)} matrix of lagged observations.
+  \item fitted: a \code{(T x q)} matrix of fitted values.
   \item resid: a \code{(T-p x q)} matrix of residuals.
-  \item inter: a \code{(k x q)} matrix of estimated intercepts of each process.
+  \item intercept: a \code{(k x q)} matrix of estimated intercepts of each process.
   \item mu: a \code{(k x q)} matrix of estimated means of each process.
+  \item beta: a list containing \code{k} separate \code{((1 + p) x q)} matrix of estimated coefficients for each regime.  
   \item phi: estimates of autoregressive coefficients.
   \item Fmat: Companion matrix containing autoregressive coefficients.
   \item stdev: List with \code{k} \code{(q x q)} matrices with estimated standard deviation on the diagonal.
@@ -107,7 +109,7 @@ control <- list(msmu   = TRUE,
                 
 # Estimate model
 \donttest{
-  y_msvar_mdl <- MSVARmdl(y_msvar_simu$y, p = 2, k = 2, control)
+  y_msvar_mdl <- MSVARmdl(y_msvar_simu$y, p = 1, k = 2, control = control)
   summary(y_msvar_mdl)
 }
 }

@@ -52,7 +52,7 @@ CHPTest <- function(Y, p, control = list()){
   supts   <- cv3[1]
   expts   <- cv3[2]
   # --------------- Bootstrap Critival Values
-  SN        <- bootCV(mdl_h0, con$rho_b, con$N, con$msvar)
+  SN        <- CHPbootCV(mdl_h0, con$rho_b, con$N, con$msvar)
   supTS_N   <- as.matrix(sort(SN[,1]))
   expTS_N   <- as.matrix(sort(SN[,2]))
   supTS_cv  <- supTS_N[round(c(0.90,0.95,0.99)*nrow(supTS_N)),]
@@ -91,7 +91,7 @@ chpDmat <-function(mdl, msvar){
   v0      <- as.numeric(mdl$stdev)
   nar     <- mdl$p
   phi     <- mdl$phi
-  b0      <- mdl$coef
+  b0      <- mdl$beta
   mu0     <- mdl$mu
   output  <- list()
   # --------------- Get 1st derivative of the log likelihood, use lt as prefix

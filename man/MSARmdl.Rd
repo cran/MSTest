@@ -19,7 +19,7 @@ MSARmdl(Y, p, k, control = list())
  \item msmu: Boolean. If \code{TRUE} model is estimated with switch in mean. If \code{FALSE} model is estimated with constant mean. Default is \code{TRUE}.
  \item msvar: Boolean. If \code{TRUE} model is estimated with switch in variance. If \code{FALSE} model is estimated with constant variance. Default is \code{TRUE}.
  \item init_theta: vector of initial values. vector must contain \code{(1 x q)} vector \code{mu}, \code{vech(sigma)}, and \code{vec(P)} where sigma is a \code{(q x q)} covariance matrix.This is optional. Default is \code{NULL}, in which case \code{\link{initVals_MSARmdl}} is used to generate initial values.
- \item method: string determining which method to use. Options are \code{'EM'} for EM algorithm or \code{'MLE'} for Maximum Likelihood Estimation.
+ \item method: string determining which method to use. Options are \code{'EM'} for EM algorithm or \code{'MLE'} for Maximum Likelihood Estimation.  Default is \code{'EM'}.
  \item maxit: integer determining the maximum number of EM iterations.
  \item thtol: double determining the convergence criterion for the absolute difference in parameter estimates \code{theta} between iterations. Default is \code{1e-6}.
  \item maxit_converge: integer determining the maximum number of initial values attempted until solution is finite. For example, if parameters in \code{theta} or \code{logLike} are \code{NaN} another set of initial values (up to \code{maxit_converge}) is attempted until finite values are returned. This does not occur frequently for most types of data but may be useful in some cases. Once finite values are obtained, this counts as one iteration towards \code{use_diff_init}. Default is \code{500}.
@@ -38,8 +38,9 @@ List of class \code{MSARmdl} (\code{S3} object) with model attributes including:
   \item x: a \code{(T-p x p)} matrix of lagged observations.
   \item fitted: a \code{(T x 1)} matrix of fitted values.
   \item resid: a \code{(T x 1)} matrix of residuals.
-  \item inter: a \code{(k x 1)} vector of estimated intercepts of each process.
+  \item intercept: a \code{(k x 1)} vector of estimated intercepts of each process.
   \item mu: a \code{(k x 1)} vector of estimated means of each process.
+  \item beta: a \code{((1 + p) x k)} matrix of estimated coefficients. 
   \item phi: estimates of autoregressive coefficients.
   \item stdev: a \code{(k x 1)} vector of estimated standard deviation of each process.
   \item sigma: a \code{(k x 1)} estimated covariance matrix.
@@ -99,7 +100,7 @@ control <- list(msmu   = TRUE,
 
 # Estimate model
 \donttest{
-  ms_mdl <- MSARmdl(y_ms_simu$y, p = 1, k = 2, control)
+  ms_mdl <- MSARmdl(y_ms_simu$y, p = 1, k = 2, control = control)
   summary(ms_mdl)
 }
 

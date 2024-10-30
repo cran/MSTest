@@ -125,7 +125,7 @@ arma::vec calc_mu2t(List mdl, double rho, List ltmt){
 //' 
 //' @export
 // [[Rcpp::export]]
-arma::vec chpStat(List mdl, double rho_b, List ltmt,int msvar){
+arma::vec chpStat(List mdl, double rho_b, List ltmt,bool msvar){
   int nn              = mdl["n"];
   int nar             = mdl["p"];
   int tt              = nn + nar;
@@ -224,37 +224,45 @@ arma::vec chpStat(List mdl, double rho_b, List ltmt,int msvar){
 //' 
 //' @return Bootstrap critical values
 //' 
-//' @keywords internal
-//' 
 //' @references Carrasco, Marine, Liang Hu, and Werner Ploberger. 2014. “Optimal 
 //' test for Markov switching parameters.” \emph{Econometrica} 82 (2): 765–784.
 //' 
 //' @export
 // [[Rcpp::export]]
-arma::mat bootCV(List mdl,double rho_b, int N, int msvar){
+arma::mat CHPbootCV(List mdl, double rho_b, int N, bool msvar){
   // calling required R functions 
-  //Function simuAR("simuAR");
+  Function simuAR("simuAR");
   Function ARmdl("ARmdl");
   Function chpDmat("chpDmat");
   // define vars from Model list
   int ar =  mdl["p"];
   arma::vec supb(N,arma::fill::zeros);  // stores the bootstrapped supTS critical value
   arma::vec expb(N,arma::fill::zeros);  // stores the bootstrapped expTS critical value
+  List y_out_tmp;
+  arma::vec y0;
+  List Mdl_tmp;
+  List ltmtb;
+  arma::vec cv4;
+  List armdl_con;
+  bool const_con = TRUE;
+  bool getSE_con = FALSE;
+  armdl_con["const"] = const_con;
+  armdl_con["getSE"] = getSE_con;
   int itb = 0;
   while (itb<N){
     // simulate the series N times according to ML estimators 
-    List y_out_tmp = simuAR_cpp(mdl);
-    arma::vec y0 = y_out_tmp["y"];
-    List  Mdl_tmp  = ARmdl(y0,ar);
-    List ltmtb  = chpDmat(Mdl_tmp,msvar);
-    arma::vec cv4  = chpStat(Mdl_tmp, rho_b, ltmtb, msvar);
+    y_out_tmp = simuAR(mdl);
+    y0        = as<arma::vec>(y_out_tmp["y"]);
+    Mdl_tmp   = ARmdl(y0,ar,armdl_con);
+    ltmtb     = chpDmat(Mdl_tmp, msvar);
+    cv4       = chpStat(Mdl_tmp, rho_b, ltmtb, msvar);
     if (cv4.has_nan()==FALSE){
       supb(itb)   = cv4(0);
       expb(itb)   = cv4(1);
       itb = itb + 1;
     }
   }
-  arma::mat boot_out = join_rows(sort(supb),sort(expb));
+  arma::mat boot_out = join_rows(supb,expb);
   return(boot_out);  
 }
 
