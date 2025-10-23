@@ -381,7 +381,8 @@ Nmdl <- function(Y, Z = NULL, control = list()){
   # ----- Obtain variables of interest
   fitted      <- zz%*%beta
   resid       <- Y - fitted
-  sigma       <- crossprod(resid)/(n-q)
+  # sigma       <- crossprod(resid)/(n-q)
+  sigma       <- crossprod(resid)/n # consistent with MLE estimation in other functions
   stdev       <- sqrt(diag(sigma))
   theta       <- c(c(t(beta)), covar_vech(sigma))
   # theta indicators
@@ -519,7 +520,8 @@ ARmdl <- function(Y, p, control = list()){
   # ----- Obtain variables of interest
   fitted  <- zz%*%beta
   resid   <- y - fitted
-  stdev   <- sqrt((crossprod(resid))/(n-npar))
+  # stdev   <- sqrt((crossprod(resid))/(n-npar))
+  stdev   <- sqrt(crossprod(resid)/n)  # consistent with MLE estimation in other functions
   sigma   <- stdev^2
   theta   <- as.matrix(c(mu,phi,betaZ,sigma))
   #theta   <- as.matrix(c(mu,sigma,phi)) # old format (before adding exog regressors)
@@ -651,7 +653,8 @@ ARXmdl <- function(Y, p, Z, control = list()){
   # ----- Obtain variables of interest
   fitted  <- zz%*%beta
   resid   <- y - fitted
-  stdev   <- sqrt((crossprod(resid))/(n-npar))
+  # stdev   <- sqrt((crossprod(resid))/(n-npar))
+  stdev   <- sqrt(crossprod(resid)/n)  # consistent with MLE estimation in other functions
   sigma   <- stdev^2
   theta   <- as.matrix(c(mu,phi,betaZ,sigma))
   #theta   <- as.matrix(c(mu,sigma,phi)) # old format (before adding exog regressors)
@@ -783,7 +786,8 @@ VARmdl <- function(Y, p, control = list()){
   # ----- Obtain variables of interest
   fitted  <- zz%*%beta
   resid   <- y - fitted
-  sigma   <- (crossprod(resid))/(n-npar)
+  # sigma   <- (crossprod(resid))/(n-npar)
+  sigma   <- crossprod(resid)/n # consistent with MLE estimation in other functions
   stdev   <- sqrt(diag(sigma))
   theta <- c(mu,c(t(phi)),covar_vech(sigma))
   # theta indicators
@@ -924,7 +928,8 @@ VARXmdl <- function(Y, p, Z, control = list()){
   # ----- Obtain variables of interest
   fitted  <- zz%*%beta
   resid   <- y - fitted
-  sigma   <- (crossprod(resid))/(n-npar)
+  # sigma   <- (crossprod(resid))/(n-npar)
+  sigma   <- crossprod(resid)/n # consistent with MLE estimation in other functions
   stdev   <- sqrt(diag(sigma))
   theta <- c(mu,c(t(phi)), c(betaZ),covar_vech(sigma))  
   # theta indicators
@@ -1079,12 +1084,20 @@ HMmdl <- function(Y, k, Z = NULL, control = list()){
           # ----- Initial values
           theta_0 <- initVals_HMmdl(init_mdl, k)
           # ----- Estimate using EM algorithm and initial values provided
-          output_tmp <- HMmdl_em(theta_0, init_mdl, k, optim_options)
+          output_tmp <- NULL
+          try(
+            output_tmp <- HMmdl_em(theta_0, init_mdl, k, optim_options)
+          )
           # ----- Convergence check
-          logLike_tmp <- output_tmp$logLike
-          theta_tmp <- output_tmp$theta
-          converge_check <- ((is.finite(output_tmp$logLike)) & (all(is.finite(output_tmp$theta))))
-          init_used <- init_used + 1
+          if (is.null(output_tmp)==FALSE){
+            logLike_tmp <- output_tmp$logLike
+            theta_tmp <- output_tmp$theta
+            converge_check <- ((is.finite(output_tmp$logLike)) & (all(is.finite(output_tmp$theta))))
+            init_used <- init_used + 1
+          }else{
+            converge_check <- FALSE
+            init_used <- init_used + 1
+          }
         }
         if (is.null(Z)){
           output_tmp$betaZ <- NULL    
@@ -1193,7 +1206,7 @@ HMmdl <- function(Y, k, Z = NULL, control = list()){
               stdev = stdev, sigma = output$sigma, theta = output$theta, 
               theta_mu_ind = theta_mu_ind, theta_x_ind = theta_x_ind, theta_beta_ind = theta_beta_ind,
               theta_sig_ind = theta_sig_ind, theta_var_ind = theta_var_ind, theta_P_ind = theta_P_ind, 
-              n = init_mdl$n, q = q, k = k, control = con,
+              n = init_mdl$n, q = q, p = 0, k = k, control = con,
               P = output$P, pinf = output$pinf, St = output$St, logLike = output$logLike,  
               deltath = output$deltath, iterations = output$iterations, theta_0 = output$theta_0,
               init_used = output$init_used, msmu = con$msmu, msvar = con$msvar, exog = (!is.null(Z)))
@@ -1844,12 +1857,20 @@ MSVARmdl <- function(Y, p, k, control = list()){
           # ----- Initial values
           theta_0 <- initVals_MSVARmdl(init_mdl, k)
           # ----- Estimate using EM algorithm and initial values provided
-          output_tmp <- MSVARmdl_em(theta_0, init_mdl, k, optim_options)
+          output_tmp <- NULL
+          try(
+            output_tmp <- MSVARmdl_em(theta_0, init_mdl, k, optim_options)
+          )
           # ----- Convergence check
-          logLike_tmp <- output_tmp$logLike
-          theta_tmp <- output_tmp$theta
-          converge_check <- ((is.finite(output_tmp$logLike)) & (all(is.finite(output_tmp$theta))))
-          init_used <- init_used + 1
+          if (is.null(output_tmp)==FALSE){
+            logLike_tmp <- output_tmp$logLike
+            theta_tmp <- output_tmp$theta
+            converge_check <- ((is.finite(output_tmp$logLike)) & (all(is.finite(output_tmp$theta))))
+            init_used <- init_used + 1
+          }else{
+            converge_check <- FALSE
+            init_used <- init_used + 1
+          }
         }
         output_tmp$theta_0 <- theta_0
         max_loglik[xi] <- output_tmp$logLike
@@ -1916,6 +1937,9 @@ MSVARmdl <- function(Y, p, k, control = list()){
     }
   }
   q <- ncol(Y)
+  if (con$msmu==FALSE){
+    output$mu     <- matrix(output$mu, nrow=k, ncol=q, byrow=TRUE) 
+  }
   output$Fmat    <- companionMat(output$phi, p, q)
   inter <- matrix(0,k,q)
   beta <- list()
@@ -1937,9 +1961,6 @@ MSVARmdl <- function(Y, p, k, control = list()){
   theta_sig_ind   <- c(rep(0, q + q*(k-1)*con$msmu + phi_len), rep(1, Nsig + Nsig*(k-1)*con$msvar), rep(0, k*k))
   theta_var_ind   <- c(rep(0, q + q*(k-1)*con$msmu + phi_len), rep(t(covar_vech(diag(q))), 1+(k-1)*con$msvar), rep(0, k*k))
   theta_P_ind     <- c(rep(0, q + q*(k-1)*con$msmu + phi_len + Nsig + Nsig*(k-1)*con$msvar), rep(1, k*k))
-  if (con$msmu==FALSE){
-    output$mu     <- matrix(output$mu, nrow=k, ncol=q, byrow=TRUE) 
-  }
   stationary <- NULL
   try(
     stationary    <- all(eigen(output$Fmat)$values<1)  
@@ -2104,12 +2125,20 @@ MSVARXmdl <- function(Y, p, k, Z, control = list()){
           # ----- Initial values
           theta_0 <- initVals_MSVARXmdl(init_mdl, k)
           # ----- Estimate using EM algorithm and initial values provided
-          output_tmp <- MSVARXmdl_em(theta_0, init_mdl, k, optim_options)
+          output_tmp <- NULL
+          try(
+            output_tmp <- MSVARXmdl_em(theta_0, init_mdl, k, optim_options)
+          )
           # ----- Convergence check
-          logLike_tmp <- output_tmp$logLike
-          theta_tmp <- output_tmp$theta
-          converge_check <- ((is.finite(output_tmp$logLike)) & (all(is.finite(output_tmp$theta))))
-          init_used <- init_used + 1
+          if (is.null(output_tmp)==FALSE){
+            logLike_tmp <- output_tmp$logLike
+            theta_tmp <- output_tmp$theta
+            converge_check <- ((is.finite(output_tmp$logLike)) & (all(is.finite(output_tmp$theta))))
+            init_used <- init_used + 1
+          }else{
+            converge_check <- FALSE
+            init_used <- init_used + 1
+          }
         }
         output_tmp$theta_0 <- theta_0
         max_loglik[xi] <- output_tmp$logLike
@@ -2176,6 +2205,9 @@ MSVARXmdl <- function(Y, p, k, Z, control = list()){
     }
   }
   q <- ncol(Y)
+  if (con$msmu==FALSE){
+    output$mu     <- matrix(output$mu, nrow=k, ncol=q, byrow=TRUE) 
+  }
   output$Fmat    <- companionMat(output$phi, p, q)
   inter <- matrix(0,k,q)
   beta <- list()
@@ -2197,9 +2229,6 @@ MSVARXmdl <- function(Y, p, k, Z, control = list()){
   theta_sig_ind   <- c(rep(0, q + q*(k-1)*con$msmu + phi_len + length(betaZ)), rep(1, Nsig + Nsig*(k-1)*con$msvar), rep(0, k*k))
   theta_var_ind   <- c(rep(0, q + q*(k-1)*con$msmu + phi_len + length(betaZ)), rep(t(covar_vech(diag(q))), 1+(k-1)*con$msvar), rep(0, k*k))
   theta_P_ind     <- c(rep(0, length(output$theta) - k*k) , rep(1, k*k))
-  if (con$msmu==FALSE){
-    output$mu     <- matrix(output$mu, nrow=k, ncol=q, byrow=TRUE) 
-  }
   stationary <- NULL
   try(
     stationary    <- all(eigen(output$Fmat)$values<1)  
