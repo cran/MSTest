@@ -7,13 +7,10 @@
 #library(devtools)
 #devtools::install_github("roga11/MSTest")
 
+start <- proc.time()
 
 ## Package and options
 library("MSTest")
-library("foreach")
-library("doParallel")
-options(prompt = "R> ", continue = "+  ", width = 70,
-        useFancyQuotes = FALSE)
 
 seed <- 12345
 
@@ -83,7 +80,7 @@ simu_hmm <- simuHMM(mdl_hmm)
 # Define DGP of MS AR process
 mdl_ms <- list(n     = 500, 
                mu    = c(5,10),
-               sigma = c(1,2),
+               sigma = c(1,1),
                phi   = c(0.75),
                k     = 2,
                P     = rbind(c(0.95, 0.10),
@@ -111,7 +108,7 @@ mdl_msvar <- list(n     = 500,
 simu_msvar <- simuMSVAR(mdl_msvar)
 
 
-pdf(file = "simulations.pdf")
+# pdf(file = "simulations.pdf")
 par(mfrow=c(3,2))
 matplot(simu_norm$y, type = "l", ylab = "", main = "Multivariate normal process",cex.main=1)
 matplot(simu_hmm$y, type = "l", ylab = "", main = "Hidden Markov process",cex.main=1)
@@ -119,7 +116,7 @@ plot(simu_ar$y, type = "l", ylab = "", main = "Autoregressive process",cex.main=
 plot(simu_msar$y, type = "l", ylab = "", main = "Markov switching autoregressive process",cex.main=1)
 matplot(simu_var$y, type = "l", ylab = "", main = "Vector autoregressive process",cex.main=1)
 matplot(simu_msvar$y, type = "l", ylab = "", main = "Markov switching vector autoregressive process",cex.main=1)
-dev.off()
+# dev.off()
 
 
 # =========================================================== #
@@ -141,7 +138,7 @@ set.seed(seed)
 ### ----- Estimate Markov switching autoregressive model ----- 
 # Set options for model estimation
 control <- list(msmu   = TRUE, 
-                msvar  = TRUE, 
+                msvar  = FALSE, 
                 method = "EM",
                 use_diff_init = 30)
 # Estimate model
@@ -162,10 +159,9 @@ summary(mdl_est_msvar)
 
 
 # plot simulated process, true regime states and model estimated smoothed probabilities
-pdf(file = "MSestim_smoothedprobs.pdf")
+# pdf(file = "MSestim_smoothedprobs.pdf")
 par(mfrow=c(3,1))
-plot(simu_hmm$y[,1], type = "l", ylab = "", main = "Hidden Markov process",cex.main=1)
-par(new = TRUE)
+matplot(simu_hmm$y, type = "l", ylab = "", main = "Hidden Markov process",cex.main=1, col = c("black", "blue"))
 lines(simu_hmm$y[,2], type = "l", ylab = "", col = "blue")
 par(new = TRUE)
 plot(mdl_est_hmm$St[,2], type = "l", ylab = "", col = "green3", lty="dashed", axes = FALSE)
@@ -180,15 +176,13 @@ par(new = TRUE)
 plot(simu_msar$St, type = "l", ylab = "", col = "red", lty="dashed", axes = FALSE)
 axis(side = 4, at = pretty(range(0,1)))
 
-plot(simu_msvar$y[,1], type = "l", ylab = "", main = "Markov switching vector autoregressive process",cex.main=1)
-par(new = TRUE)
-lines(simu_msvar$y[,2], type = "l", ylab = "", col = "blue")
+matplot(simu_msvar$y, type = "l", ylab = "", main = "Markov switching vector autoregressive process",cex.main=1, col = c("black", "blue"))
 par(new = TRUE)
 plot(mdl_est_msvar$St[,1], type = "l", ylab = "", col = "green3", lty="dashed", axes = FALSE)
 par(new = TRUE)
 plot(simu_msvar$St, type = "l", ylab = "", col = "red", lty="dashed", axes = FALSE)
 axis(side = 4, at = pretty(range(0,1)))
-dev.off()
+# dev.off()
 
 
 # =========================================================== #
@@ -197,16 +191,16 @@ dev.off()
 ### ----- Test Markov switching autoregressive process using Rodriguez-Rondon & Dufour (2025) LMC-LRT ----- 
 set.seed(seed)
 # Set options for testing procedure
-lmc_control = list(N = 99,
+lmc_control = list(N = 19,
                    mdl_h0_control = list(const  = TRUE, 
                                          getSE  = FALSE),
                    mdl_h1_control = list(msmu   = TRUE, 
                                          msvar  = TRUE,
                                          getSE  = FALSE,
                                          method = "EM",
-                                         use_diff_init = 5))
+                                         use_diff_init = 1))
 # Perform Rodriguez-Rondon & Dufour (2025) LMC-LRT
-lmclrt <- LMCLRTest(simu_msar[["y"]], p = 1, k0 = 1 , k1 = 2, control = lmc_control)
+lmclrt <- LMCLRTest(simu_msvar[["y"]], p = 1, k0 = 1 , k1 = 2, control = lmc_control)
 summary(lmclrt)
 
 
@@ -214,11 +208,10 @@ summary(lmclrt)
 ### ----- Test autoregressive process using Rodriguez-Rondon & Dufour (2025) MMC-LRT ----- 
 set.seed(seed)
 # Set options for testing procedure
-mmc_control = list(N = 99,
+mmc_control = list(N = 19,
                    eps = 0.3,
                    threshold_stop = 0.05 + 1e-6, 
-                   type = "pso",
-                   workers  = 8,
+                   type = "GenSA",
                    CI_union = FALSE,
                    mdl_h0_control = list(const  = TRUE, 
                                          getSE  = FALSE),
@@ -227,13 +220,9 @@ mmc_control = list(N = 99,
                                          getSE  = FALSE,
                                          method = "EM"),
                    maxit  = 100)
-# start cluster 
-doParallel::registerDoParallel(mmc_control[["workers"]])
 # Perform Rodriguez-Rondon & Dufour (2025) MMC-LRT
-mmclrt <- MMCLRTest(simu_ar[["y"]], p = 1, k0 = 1 , k1 = 2, control = mmc_control)
+mmclrt <- MMCLRTest(simu_norm[["y"]], p = 0, k0 = 1 , k1 = 2, control = mmc_control)
 summary(mmclrt)
-# stop cluster
-doParallel::stopImplicitCluster()
 
 
 ### ----- Test Markov switching autoregressive process using Dufour & Luger (2017) LMC test ----- 
@@ -244,6 +233,9 @@ lmc_control = list(N = 99,
                    getSE = TRUE)
 # Perform Dufour & Luger (2017) LMC test 
 lmcmoment <- DLMCTest(simu_msar[["y"]], p = 1, control = lmc_control)
+colnames(lmcmoment$S0) <- c("M(eps)","V(eps)","S(eps)","K(eps)")
+colnames(lmcmoment$F0_min) <- "F(eps)"
+colnames(lmcmoment$F0_prod) <- "F(eps)"
 summary(lmcmoment)
 
 
@@ -252,13 +244,17 @@ set.seed(seed)
 # Set options for testing procedure
 mmc_control <- list(N = 99,
                     getSE = TRUE,
-                    eps = 1e-9, 
+                    eps = 0, 
                     CI_union = TRUE,
                     optim_type = "GenSA",
                     threshold_stop = 0.05 + 1e-6, 
                     maxit = 100)
 # Perform Dufour & Luger (2017) MMC test 
 mmcmoment <- DLMMCTest(simu_msar[["y"]], p = 1, control = mmc_control)
+colnames(mmcmoment$S0_min) <- c("M(eps)","V(eps)","S(eps)","K(eps)")
+colnames(mmcmoment$S0_prod) <- c("M(eps)","V(eps)","S(eps)","K(eps)")
+colnames(mmcmoment$F0_min) <- "F(eps)"
+colnames(mmcmoment$F0_prod) <- "F(eps)"
 summary(mmcmoment)
 
 
@@ -267,7 +263,7 @@ set.seed(seed)
 # Set options for testing procedure
 chp_control = list(N = 1000, 
                    rho_b = 0.7, 
-                   msvar = TRUE)
+                   msvar = FALSE)
 # Perform Carrasco, Hu, & Ploberger (2014) test
 pstabilitytest <- CHPTest(simu_ar[["y"]], p = 1, control = chp_control)
 summary(pstabilitytest)
@@ -276,14 +272,25 @@ summary(pstabilitytest)
 ### ----- Test Markov switching autoregressive process using Hansen (1992) LRT ----- 
 set.seed(seed)
 # Set options for testing procedure
-hlrt_control  <- list(msvar          = TRUE,
+hlrt_control  <- list(msvar          = FALSE,
                       gridsize       = 20,
                       mugrid_from    = 0,
                       mugrid_by      = 1,
-                      siggrid_from   = 0.5,
-                      siggrid_by     = 0.1,
                       theta_null_low = c(0,-0.99,0.01),
                       theta_null_upp = c(20,0.99,20))
 # Perform Hansen (1992) likelihood ratio test
 hlrt <- HLRTest(simu_msar[["y"]], p = 1, control = hlrt_control)
 summary(hlrt)
+
+
+
+
+
+
+
+# --------------- END 
+
+end <- proc.time() - start
+
+print(round(end[3]/60,2))
+print(end[3]/60 < 10)
