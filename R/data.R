@@ -1,36 +1,42 @@
 #' @title US Real GDP data 1947Q2 - 2024Q2
-#' 
-#' @format 
-#' \describe{This data is used in Rodriguez-Rondon & Dufour (2024). The series ranges from 
+#'
+#' @description This data is used in Rodriguez-Rondon & Dufour (2026a). The series ranges from
 #' 1947Q2 to 2024Q2.
+#'
+#' @format
+#' \describe{
 #'   \item{Date}{Vector of dates}
 #'   \item{RGDP}{US Real GDP series}
 #'   \item{RGDP_gr}{log difference of US Real GDP series}
 #' }
 #' @source \url{https://fred.stlouisfed.org/series/GDPC1}
 #' @references U.S. Bureau of Economic Analysis, Real Gross Domestic Product [GDPC1], retrieved from FRED, Federal Reserve Bank of St. Louis; \emph{\url{https://fred.stlouisfed.org/series/GDPC1}}, September, 2024.
-#' @references Rodriguez-Rondon, Gabriel and Jean-Marie Dufour. 2024. “Monte Carlo Likelihood Ratio Tests for Markov Switching Models.” \emph{Unpublished manuscript}.
+#' @references Rodriguez-Rondon, G., & Dufour, J.-M. 2026a. "Monte Carlo Likelihood-Ratio Tests for Markov Switching Models." \emph{Bank of Canada Staff Working Paper}, No. 2026-23. doi: 10.34989/swp-2026-23.
 "USRGDP"
 # -----------------------------------------------------------------------------
 #' @title US GNP data 1947Q2 - 2024Q2
-#' 
-#' @format 
-#' \describe{This data is used in Rodriguez-Rondon & Dufour (2024). The series ranges from 
+#'
+#' @description This data is used in Rodriguez-Rondon & Dufour (2026a). The series ranges from
 #' 1947Q2 to 2024Q2.
+#'
+#' @format
+#' \describe{
 #'   \item{Date}{Vector of dates}
 #'   \item{GNP}{US GNP series}
 #'   \item{GNP_gr}{log difference of US GNP series}
 #' }
 #' @source \url{https://fred.stlouisfed.org/graph/?g=UKDQ}
 #' @references U.S. Bureau of Economic Analysis, Gross National Product [GNP], retrieved from FRED, Federal Reserve Bank of St. Louis; \emph{\url{https://fred.stlouisfed.org/series/GNP}}, September, 2024.
-#' @references Rodriguez-Rondon, Gabriel and Jean-Marie Dufour. 2024. “Monte Carlo Likelihood Ratio Tests for Markov Switching Models.” \emph{Unpublished manuscript}.
+#' @references Rodriguez-Rondon, G., & Dufour, J.-M. 2026a. "Monte Carlo Likelihood-Ratio Tests for Markov Switching Models." \emph{Bank of Canada Staff Working Paper}, No. 2026-23. doi: 10.34989/swp-2026-23.
 "USGNP"
 # -----------------------------------------------------------------------------
 #' @title Carrasco, Hu, & Ploberger 2010 GNP data
-#' 
-#' @format 
-#' \describe{This data is the extension of the GNP series used in CHP (2014), Econometrica. This series ranges from 
-#' 1951Q2 to 2010Q4. 
+#'
+#' @description This data is the extension of the GNP series used in CHP (2014), Econometrica. This series ranges from
+#' 1951Q2 to 2010Q4.
+#'
+#' @format
+#' \describe{
 #'   \item{Date}{Vector of dates}
 #'   \item{GNP}{US GNP series}
 #'   \item{GNP_gr}{log difference of US GNP series}
@@ -41,10 +47,12 @@
 "chp10GNP"
 # -----------------------------------------------------------------------------
 #' @title Hamilton 1984 & Hansen 1992 GNP data
-#' 
-#' @format 
-#' \describe{This data set is used in Hansen (1992) to test the US GNP model proposed by 
-#' Hamilton (1989). This series ranges from 1951Q2 to 1984Q4. 
+#'
+#' @description This data set is used in Hansen (1992) to test the US GNP model proposed by
+#' Hamilton (1989). This series ranges from 1951Q2 to 1984Q4.
+#'
+#' @format
+#' \describe{
 #'   \item{Date}{Vector of dates}
 #'   \item{GNP}{US GNP series}
 #'   \item{GNP_gr}{US GNP log difference}

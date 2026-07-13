@@ -804,7 +804,12 @@ getHessian.VARmdl <- function(mdl){
 #' 
 #' @export
 getHessian.HMmdl <- function(mdl){
-  hess <- numDeriv::hessian(logLike_HMmdl, mdl$theta, method = "Richardson", mdl = mdl, k = mdl$k) 
+  npar    <- length(mdl$theta)
+  P_start <- npar - mdl$k^2 + 1L
+  d_vec   <- rep(0.1, npar)
+  d_vec[P_start:npar] <- 0.01
+  hess <- numDeriv::hessian(logLike_HMmdl, mdl$theta, method = "Richardson",
+                            method.args = list(d = d_vec), mdl = mdl, k = mdl$k)
   return(hess)
 }
 
@@ -820,10 +825,16 @@ getHessian.HMmdl <- function(mdl){
 #' 
 #' @export
 getHessian.MSARmdl <- function(mdl){
+  npar    <- length(mdl$theta)
+  P_start <- npar - mdl$k^2 + 1L
+  d_vec   <- rep(0.1, npar)
+  d_vec[P_start:npar] <- 0.01
   if (is.null(mdl$control$Z)){
-    hess <- numDeriv::hessian(logLike_MSARmdl, mdl$theta, method = "Richardson", mdl = mdl, k = mdl$k) 
+    hess <- numDeriv::hessian(logLike_MSARmdl, mdl$theta, method = "Richardson",
+                              method.args = list(d = d_vec), mdl = mdl, k = mdl$k)
   }else{
-    hess <- numDeriv::hessian(logLike_MSARXmdl, mdl$theta, method = "Richardson", mdl = mdl, k = mdl$k) 
+    hess <- numDeriv::hessian(logLike_MSARXmdl, mdl$theta, method = "Richardson",
+                              method.args = list(d = d_vec), mdl = mdl, k = mdl$k)
   }
   return(hess)
 }
@@ -840,10 +851,16 @@ getHessian.MSARmdl <- function(mdl){
 #' 
 #' @export
 getHessian.MSVARmdl <- function(mdl){
+  npar    <- length(mdl$theta)
+  P_start <- npar - mdl$k^2 + 1L
+  d_vec   <- rep(0.1, npar)
+  d_vec[P_start:npar] <- 0.01
   if (is.null(mdl$control$Z)){
-    hess <- numDeriv::hessian(logLike_MSVARmdl, mdl$theta, method = "Richardson", mdl = mdl, k = mdl$k) 
+    hess <- numDeriv::hessian(logLike_MSVARmdl, mdl$theta, method = "Richardson",
+                              method.args = list(d = d_vec), mdl = mdl, k = mdl$k)
   }else{
-    hess <- numDeriv::hessian(logLike_MSVARXmdl, mdl$theta, method = "Richardson", mdl = mdl, k = mdl$k) 
+    hess <- numDeriv::hessian(logLike_MSVARXmdl, mdl$theta, method = "Richardson",
+                              method.args = list(d = d_vec), mdl = mdl, k = mdl$k)
   }
   return(hess)
 }
@@ -855,6 +872,7 @@ getHessian.MSVARmdl <- function(mdl){
 #' @description This is a method for the function \code{print()} for objects of the class \code{Nmdl}.
 #' 
 #' @inheritParams base::print
+#' @param digits Integer determining the number of significant digits to print.
 #'
 #' @return The \code{Nmdl} object is returned invisibly.
 #' 
@@ -862,7 +880,7 @@ getHessian.MSVARmdl <- function(mdl){
 #' 
 #' @export
 print.Nmdl <- function(x, digits = getOption("digits"), ...){
-  cat("\nNormally Distributed Model\n")
+  cat("Normally Distributed Model\n")
   frame_tmp <- data.frame(coef = x$theta)
   if (x$control$getSE==TRUE){
     frame_tmp["s.e."] <- x$theta_se
@@ -877,6 +895,7 @@ print.Nmdl <- function(x, digits = getOption("digits"), ...){
 #' @description This is a method for the function \code{print()} for objects of the class \code{ARmdl}.
 #' 
 #' @inheritParams base::print
+#' @param digits Integer determining the number of significant digits to print.
 #'
 #' @return The \code{ARmdl} object is returned invisibly.
 #' 
@@ -884,7 +903,7 @@ print.Nmdl <- function(x, digits = getOption("digits"), ...){
 #' 
 #' @export
 print.ARmdl <- function(x, digits = getOption("digits"), ...){
-  cat("\nAutoregressive Model\n")
+  cat("Autoregressive Model\n")
   frame_tmp <- data.frame(coef = x$theta)
   if (x$control$getSE==TRUE){
     frame_tmp["s.e."] <- x$theta_se
@@ -900,6 +919,7 @@ print.ARmdl <- function(x, digits = getOption("digits"), ...){
 #' @description This is a method for the function \code{print()} for objects of the class \code{VARmdl}.
 #' 
 #' @inheritParams base::print
+#' @param digits Integer determining the number of significant digits to print.
 #'
 #' @return The \code{VARmdl} object is returned invisibly.
 #' 
@@ -907,7 +927,7 @@ print.ARmdl <- function(x, digits = getOption("digits"), ...){
 #' 
 #' @export
 print.VARmdl <- function(x, digits = getOption("digits"), ...){
-  cat("\nVector Autoregressive Model\n")
+  cat("Vector Autoregressive Model\n")
   frame_tmp <- data.frame(coef = x$theta)
   if (x$control$getSE==TRUE){
     frame_tmp["s.e."] <- x$theta_se
@@ -923,6 +943,7 @@ print.VARmdl <- function(x, digits = getOption("digits"), ...){
 #' @description This is a method for the function \code{print()} for objects of the class \code{HMmdl}.
 #' 
 #' @inheritParams base::print
+#' @param digits Integer determining the number of significant digits to print.
 #'
 #' @return The \code{HMmdl} object is returned invisibly.
 #' 
@@ -930,7 +951,7 @@ print.VARmdl <- function(x, digits = getOption("digits"), ...){
 #' 
 #' @export
 print.HMmdl <- function(x, digits = getOption("digits"), ...){
-  cat("\nHidden Markov Model\n")
+  cat("Hidden Markov Model\n")
   frame_tmp <- data.frame(coef = x$theta)
   if (x$control$getSE==TRUE){
     frame_tmp["s.e."] <- x$theta_se
@@ -946,6 +967,7 @@ print.HMmdl <- function(x, digits = getOption("digits"), ...){
 #' @description This is a method for the function \code{print()} for objects of the class \code{MSARmdl}.
 #' 
 #' @inheritParams base::print
+#' @param digits Integer determining the number of significant digits to print.
 #'
 #' @return The \code{MSARmdl} object is returned invisibly.
 #' 
@@ -953,7 +975,7 @@ print.HMmdl <- function(x, digits = getOption("digits"), ...){
 #' 
 #' @export
 print.MSARmdl <- function(x, digits = getOption("digits"), ...){
-  cat("\nMarkov Switching Autoregressive Model\n")
+  cat("Markov Switching Autoregressive Model\n")
   frame_tmp <- data.frame(coef = x$theta)
   if (x$control$getSE==TRUE){
     frame_tmp["s.e."] <- x$theta_se
@@ -969,6 +991,7 @@ print.MSARmdl <- function(x, digits = getOption("digits"), ...){
 #' @description This is a method for the function \code{print()} for objects of the class \code{MSVARmdl}.
 #' 
 #' @inheritParams base::print
+#' @param digits Integer determining the number of significant digits to print.
 #'
 #' @return The \code{MSVARmdl} object is returned invisibly.
 #' 
@@ -976,7 +999,7 @@ print.MSARmdl <- function(x, digits = getOption("digits"), ...){
 #' 
 #' @export
 print.MSVARmdl <- function(x, digits = getOption("digits"), ...){
-  cat("\nMarkov Switching Vector Autoregressive Model\n")
+  cat("Markov Switching Vector Autoregressive Model\n")
   frame_tmp <- data.frame(coef = x$theta)
   if (x$control$getSE==TRUE){
     frame_tmp["s.e."] <- x$theta_se
@@ -987,22 +1010,23 @@ print.MSVARmdl <- function(x, digits = getOption("digits"), ...){
 }
 
 
-#' @title Print summary of a \code{CHPTest} object
+#' @title Print summary of a \code{HLRTest} object
 #'
-#' @description This is a method for the function \code{print()} for objects of the class \code{CHPTest}.
-#' 
+#' @description This is a method for the function \code{print()} for objects of the class \code{HLRTest}.
+#'
 #' @inheritParams base::print
+#' @param digits Integer determining the number of significant digits to print.
 #'
-#' @return The \code{CHPTest} object is returned invisibly.
-#' 
+#' @return The \code{HLRTest} object is returned invisibly.
+#'
 #' @keywords internal
-#' 
+#'
 #' @export
 print.HLRTest <- function(x, digits = getOption("digits"), ...){
   if (x$control$msvar){
-    cat("\nHansen (1992) Likelihood Ratio Bound Test -  Switch in Mean and Variance\n")
+    cat("Hansen (1992) Likelihood Ratio Bound Test -  Switch in Mean and Variance\n")
   }else{
-    cat("\nHansen (1992) Likelihood Ratio Bound Test -  Switch in Mean only\n") 
+    cat("Hansen (1992) Likelihood Ratio Bound Test -  Switch in Mean only\n")
   }
   out <- data.frame(cbind(x$LR0, x$LR_cv, x$pval))
   colnames(out) <- c("test-stat", colnames(x$LR_cv), "p-value")
@@ -1017,6 +1041,7 @@ print.HLRTest <- function(x, digits = getOption("digits"), ...){
 #' @description This is a method for the function \code{print()} for objects of the class \code{CHPTest}.
 #' 
 #' @inheritParams base::print
+#' @param digits Integer determining the number of significant digits to print.
 #'
 #' @return The \code{CHPTest} object is returned invisibly.
 #' 
@@ -1024,7 +1049,7 @@ print.HLRTest <- function(x, digits = getOption("digits"), ...){
 #' 
 #' @export
 print.CHPTest <- function(x, digits = getOption("digits"), ...){
-  cat("\nCarrasco, Hu, & Ploberger (2014) Parameter Stability Test \n")
+  cat("Carrasco, Hu, & Ploberger (2014) Parameter Stability Test \n")
   if (x$control$msvar){
     cat("\n- Switch in Mean and Variance\n")
   }else{
@@ -1043,6 +1068,7 @@ print.CHPTest <- function(x, digits = getOption("digits"), ...){
 #' @description This is a method for the function \code{print()} for objects of the class \code{DLMCTest}.
 #' 
 #' @inheritParams base::print
+#' @param digits Integer determining the number of significant digits to print.
 #'
 #' @return The \code{DLMCTest} object is returned invisibly.
 #' 
@@ -1050,7 +1076,7 @@ print.CHPTest <- function(x, digits = getOption("digits"), ...){
 #' 
 #' @export
 print.DLMCTest <- function(x, digits = getOption("digits"), ...){
-  cat("\nDufour & Luger (2017) Moment-Based Local Monte Carlo Test\n")
+  cat("Dufour & Luger (2017) Moment-Based Local Monte Carlo Test\n")
   out <- data.frame(rbind(c(t(x$theta),x$S0, x$F0_min, x$FN_min_cv, x$pval_min),
                           c(t(x$theta),x$S0, x$F0_prod, x$FN_prod_cv, x$pval_prod)))
   colnames(out) <- c(rownames(x$theta), colnames(x$S0), colnames(x$F0_min), names(x$FN_min_cv), "p-value")
@@ -1064,6 +1090,7 @@ print.DLMCTest <- function(x, digits = getOption("digits"), ...){
 #' @description This is a method for the function \code{print()} for objects of the class \code{DLMMCTest}.
 #' 
 #' @inheritParams base::print
+#' @param digits Integer determining the number of significant digits to print.
 #'
 #' @return The \code{DLMMCTest} object is returned invisibly.
 #' 
@@ -1071,10 +1098,10 @@ print.DLMCTest <- function(x, digits = getOption("digits"), ...){
 #' 
 #' @export
 print.DLMMCTest <- function(x, digits = getOption("digits"), ...){
-  cat("\nDufour & Luger (2017) Moment-Based Maximized Monte Carlo Test\n")
-  out <- data.frame(rbind(c(x$S0_min, x$F0_min, x$pval_min),
-                          c(x$S0_prod, x$F0_prod, x$pval_prod)))
-  colnames(out) <- c(colnames(x$S0_min), colnames(x$F0_min), "p-value")
+  cat("Dufour & Luger (2017) Moment-Based Maximized Monte Carlo Test\n")
+  out <- data.frame(rbind(c(t(x$theta_max_min), x$S0_min, x$F0_min, x$pval_min),
+                          c(t(x$theta_max_prod), x$S0_prod, x$F0_prod, x$pval_prod)))
+  colnames(out) <- c(rownames(x$theta_max_min), colnames(x$S0_min), colnames(x$F0_min), "p-value")
   rownames(out) <- c("MMC_min","MMC_prod")
   print(format(signif(out, max(1L, digits - 2L))))
   invisible(x)
@@ -1085,6 +1112,7 @@ print.DLMMCTest <- function(x, digits = getOption("digits"), ...){
 #' @description This is a method for the function \code{print()} for objects of the class \code{LMCLRTest}.
 #' 
 #' @inheritParams base::print
+#' @param digits Integer determining the number of significant digits to print.
 #'
 #' @return The \code{LMCLRTest} object is returned invisibly.
 #' 
@@ -1092,7 +1120,7 @@ print.DLMMCTest <- function(x, digits = getOption("digits"), ...){
 #' 
 #' @export
 print.LMCLRTest <- function(x, digits = getOption("digits"), ...){
-  cat("\nRodriguez-Rondon & Dufour (2025) Local Monte Carlo Likelihood Ratio Test\n")
+  cat("Rodriguez-Rondon & Dufour (2026) Local Monte Carlo Likelihood Ratio Test\n")
   out <- data.frame(t(as.matrix(c(x$LRT_0, x$LRN_cv, x$pval))))
   colnames(out) <- c(names(x$LRT_0), names(x$LRN_cv), "p-value")
   rownames(out) <- "LMC_LRT"
@@ -1107,6 +1135,7 @@ print.LMCLRTest <- function(x, digits = getOption("digits"), ...){
 #' @description This is a method for the function \code{print()} for objects of the class \code{MMCLRTest}.
 #' 
 #' @inheritParams base::print
+#' @param digits Integer determining the number of significant digits to print.
 #'
 #' @return The \code{MMCLRTest} object is returned invisibly.
 #' 
@@ -1114,7 +1143,7 @@ print.LMCLRTest <- function(x, digits = getOption("digits"), ...){
 #' 
 #' @export
 print.MMCLRTest <- function(x, digits = getOption("digits"), ...){
-  cat("\nRodriguez-Rondon & Dufour (2025) Maximized Monte Carlo Likelihood Ratio Test\n")
+  cat("Rodriguez-Rondon & Dufour (2026) Maximized Monte Carlo Likelihood Ratio Test\n")
   out <- data.frame(t(as.matrix(c(x$LRT_0, x$pval))))
   colnames(out) <- c(names(x$LRT_0), "p-value")
   rownames(out) <- "MMC_LRT"
@@ -1128,6 +1157,7 @@ print.MMCLRTest <- function(x, digits = getOption("digits"), ...){
 #' @description This is a method for the function \code{print()} for objects of the class \code{BootLRTest}.
 #' 
 #' @inheritParams base::print
+#' @param digits Integer determining the number of significant digits to print.
 #'
 #' @return The \code{BootLRTest} object is returned invisibly.
 #' 
@@ -1135,7 +1165,7 @@ print.MMCLRTest <- function(x, digits = getOption("digits"), ...){
 #' 
 #' @export
 print.BootLRTest <- function(x, digits = getOption("digits"), ...){
-  cat("\nBootstrap Likelihood Ratio Test\n")
+  cat("Bootstrap Likelihood Ratio Test\n")
   out <- data.frame(t(as.matrix(c(x$LRT_0, x$LRN_cv, x$pval))))
   colnames(out) <- c(names(x$LRT_0), names(x$LRN_cv), "p-value")
   rownames(out) <- "Boot_LRT"
@@ -1150,6 +1180,7 @@ print.BootLRTest <- function(x, digits = getOption("digits"), ...){
 #' @description This is a method for the function \code{summary()} for objects of the class \code{Nmdl}.
 #' 
 #' @inheritParams base::summary
+#' @param digits Integer determining the number of significant digits to print.
 #'
 #' @return The \code{Nmdl} object is returned invisibly.
 #' 
@@ -1157,7 +1188,7 @@ print.BootLRTest <- function(x, digits = getOption("digits"), ...){
 #' 
 #' @export
 summary.Nmdl <- function(object, digits = getOption("digits"), ...){
-  cat("\nNormally Distributed Model\n")
+  cat("Normally Distributed Model\n")
   frame_tmp <- data.frame(coef = object$theta)
   if (object$control$getSE==TRUE){
     frame_tmp["s.e."] <- object$theta_se
@@ -1185,6 +1216,7 @@ summary.Nmdl <- function(object, digits = getOption("digits"), ...){
 #' @description This is a method for the function \code{summary()} for objects of the class \code{ARmdl}.
 #' 
 #' @inheritParams base::summary
+#' @param digits Integer determining the number of significant digits to print.
 #'
 #' @return The \code{ARmdl} object is returned invisibly.
 #' 
@@ -1192,7 +1224,7 @@ summary.Nmdl <- function(object, digits = getOption("digits"), ...){
 #' 
 #' @export
 summary.ARmdl <- function(object, digits = getOption("digits"), ...){
-  cat("\nAutoregressive Model\n")
+  cat("Autoregressive Model\n")
   frame_tmp <- data.frame(coef = object$theta)
   if (object$control$getSE==TRUE){
     frame_tmp["s.e."] <- object$theta_se
@@ -1220,6 +1252,7 @@ summary.ARmdl <- function(object, digits = getOption("digits"), ...){
 #' @description This is a method for the function \code{summary()} for objects of the class \code{VARmdl}.
 #' 
 #' @inheritParams base::summary
+#' @param digits Integer determining the number of significant digits to print.
 #'
 #' @return The \code{VARmdl} object is returned invisibly.
 #' 
@@ -1227,7 +1260,7 @@ summary.ARmdl <- function(object, digits = getOption("digits"), ...){
 #' 
 #' @export
 summary.VARmdl <- function(object, digits = getOption("digits"), ...){
-  cat("\nVector Autoregressive Model\n")
+  cat("Vector Autoregressive Model\n")
   frame_tmp <- data.frame(coef = object$theta)
   if (object$control$getSE==TRUE){
     frame_tmp["s.e."] <- object$theta_se
@@ -1255,6 +1288,7 @@ summary.VARmdl <- function(object, digits = getOption("digits"), ...){
 #' @description This is a method for the function \code{summary()} for objects of the class \code{HMmdl}.
 #' 
 #' @inheritParams base::summary
+#' @param digits Integer determining the number of significant digits to print.
 #'
 #' @return The \code{HMmdl} object is returned invisibly.
 #' 
@@ -1262,7 +1296,7 @@ summary.VARmdl <- function(object, digits = getOption("digits"), ...){
 #' 
 #' @export
 summary.HMmdl <- function(object, digits = getOption("digits"), ...){
-  cat("\nHidden Markov Model\n")
+  cat("Hidden Markov Model\n")
   frame_tmp <- data.frame(coef = object$theta)
   if (object$control$getSE==TRUE){
     frame_tmp["s.e."] <- object$theta_se
@@ -1291,6 +1325,7 @@ summary.HMmdl <- function(object, digits = getOption("digits"), ...){
 #' @description This is a method for the function \code{summary()} for objects of the class \code{MSARmdl}.
 #' 
 #' @inheritParams base::summary
+#' @param digits Integer determining the number of significant digits to print.
 #'
 #' @return The \code{MSARmdl} object is returned invisibly.
 #' 
@@ -1298,7 +1333,7 @@ summary.HMmdl <- function(object, digits = getOption("digits"), ...){
 #' 
 #' @export
 summary.MSARmdl <- function(object, digits = getOption("digits"), ...){
-  cat("\nMarkov Switching Autoregressive Model\n")
+  cat("Markov Switching Autoregressive Model\n")
   frame_tmp <- data.frame(coef = object$theta)
   if (object$control$getSE==TRUE){
     frame_tmp["s.e."] <- object$theta_se
@@ -1326,6 +1361,7 @@ summary.MSARmdl <- function(object, digits = getOption("digits"), ...){
 #' @description This is a method for the function \code{summary()} for objects of the class \code{MSVARmdl}.
 #' 
 #' @inheritParams base::summary
+#' @param digits Integer determining the number of significant digits to print.
 #'
 #' @return The \code{MSVARmdl} object is returned invisibly.
 #' 
@@ -1333,7 +1369,7 @@ summary.MSARmdl <- function(object, digits = getOption("digits"), ...){
 #' 
 #' @export
 summary.MSVARmdl <- function(object, digits = getOption("digits"), ...){
-  cat("\nMarkov Switching Vector Autoregressive Model\n")
+  cat("Markov Switching Vector Autoregressive Model\n")
   frame_tmp <- data.frame(coef = object$theta)
   if (object$control$getSE==TRUE){
     frame_tmp["s.e."] <- object$theta_se
@@ -1356,19 +1392,20 @@ summary.MSVARmdl <- function(object, digits = getOption("digits"), ...){
   
 }
 
-#' @title Summary of a \code{CHPTest} object
+#' @title Summary of a \code{HLRTest} object
 #'
-#' @description This is a method for the function \code{summary()} for objects of the class \code{CHPTest}.
-#' 
+#' @description This is a method for the function \code{summary()} for objects of the class \code{HLRTest}.
+#'
 #' @inheritParams base::summary
+#' @param digits Integer determining the number of significant digits to print.
 #'
-#' @return The \code{CHPTest} object is returned invisibly.
-#' 
+#' @return The \code{HLRTest} object is returned invisibly.
+#'
 #' @keywords internal
-#' 
+#'
 #' @export
 summary.HLRTest <- function(object, digits = getOption("digits"), ...){
-  cat("\nRestricted Model\n")
+  cat("Restricted Model\n")
   frame_tmp <- data.frame(coef = object$mdl_h0$theta)
   if (object$mdl_h0$control$getSE==TRUE){
     frame_tmp["s.e."] <- object$mdl_h0$theta_se
@@ -1395,6 +1432,7 @@ summary.HLRTest <- function(object, digits = getOption("digits"), ...){
 #' @description This is a method for the function \code{summary()} for objects of the class \code{CHPTest}.
 #' 
 #' @inheritParams base::summary
+#' @param digits Integer determining the number of significant digits to print.
 #'
 #' @return The \code{CHPTest} object is returned invisibly.
 #' 
@@ -1402,7 +1440,7 @@ summary.HLRTest <- function(object, digits = getOption("digits"), ...){
 #' 
 #' @export
 summary.CHPTest <- function(object, digits = getOption("digits"), ...){
-  cat("\nRestricted Model\n")
+  cat("Restricted Model\n")
   frame_tmp <- data.frame(coef = object$mdl_h0$theta)
   if (object$mdl_h0$control$getSE==TRUE){
     frame_tmp["s.e."] <- object$mdl_h0$theta_se
@@ -1427,11 +1465,12 @@ summary.CHPTest <- function(object, digits = getOption("digits"), ...){
   invisible(object)
 }
 
-#' @title summaryummary of a \code{DLMCTest} object
+#' @title Summary of a \code{DLMCTest} object
 #'
 #' @description This is a method for the function \code{summary()} for objects of the class \code{DLMCTest}.
 #' 
 #' @inheritParams base::summary
+#' @param digits Integer determining the number of significant digits to print.
 #'
 #' @return The \code{DLMCTest} object is returned invisibly.
 #' 
@@ -1439,7 +1478,7 @@ summary.CHPTest <- function(object, digits = getOption("digits"), ...){
 #' 
 #' @export
 summary.DLMCTest <- function(object, digits = getOption("digits"), ...){
-  cat("\nRestricted Model\n") 
+  cat("Restricted Model\n") 
   frame_tmp <- data.frame(coef = object$mdl_h0$theta)
   if (object$mdl_h0$control$getSE==TRUE){
     frame_tmp["s.e."] <- object$mdl_h0$theta_se
@@ -1464,6 +1503,7 @@ summary.DLMCTest <- function(object, digits = getOption("digits"), ...){
 #' @description This is a method for the function \code{summary()} for objects of the class \code{DLMMCTest}.
 #' 
 #' @inheritParams base::summary
+#' @param digits Integer determining the number of significant digits to print.
 #'
 #' @return The \code{DLMMCTest} object is returned invisibly.
 #' 
@@ -1471,7 +1511,7 @@ summary.DLMCTest <- function(object, digits = getOption("digits"), ...){
 #' 
 #' @export
 summary.DLMMCTest <- function(object, digits = getOption("digits"), ...){
-  cat("\nRestricted Model\n") 
+  cat("Restricted Model\n") 
   frame_tmp <- data.frame(coef = object$mdl_h0$theta)
   if (object$mdl_h0$control$getSE==TRUE){
     frame_tmp["s.e."] <- object$mdl_h0$theta_se
@@ -1483,9 +1523,9 @@ summary.DLMMCTest <- function(object, digits = getOption("digits"), ...){
   cat(paste("\nBIC = "),object$mdl_h0$BIC)
   cat("\n")
   cat("\nDufour & Luger (2017) Moment-Based Maximized Monte Carlo Test\n")
-  out <- data.frame(rbind(c(object$S0_min, object$F0_min, object$pval_min),
-                          c(object$S0_prod, object$F0_prod, object$pval_prod)))
-  colnames(out) <- c(colnames(object$S0_min), colnames(object$F0_min), "p-value")
+  out <- data.frame(rbind(c(t(object$theta_max_min), object$S0_min, object$F0_min, object$pval_min),
+                          c(t(object$theta_max_prod), object$S0_prod, object$F0_prod, object$pval_prod)))
+  colnames(out) <- c(rownames(object$theta_max_min), colnames(object$S0_min), colnames(object$F0_min), "p-value")
   rownames(out) <- c("MMC_min","MMC_prod")
   print(format(signif(out, max(1L, digits - 2L))))
   invisible(object)
@@ -1496,6 +1536,7 @@ summary.DLMMCTest <- function(object, digits = getOption("digits"), ...){
 #' @description This is a method for the function \code{summary()} for objects of the class \code{LMCLRTest}.
 #' 
 #' @inheritParams base::summary
+#' @param digits Integer determining the number of significant digits to print.
 #'
 #' @return The \code{LMCLRTest} object is returned invisibly.
 #' 
@@ -1503,7 +1544,7 @@ summary.DLMMCTest <- function(object, digits = getOption("digits"), ...){
 #' 
 #' @export
 summary.LMCLRTest <- function(object, digits = getOption("digits"), ...){
-  cat("\nRestricted Model\n") 
+  cat("Restricted Model\n") 
   frame_h0_tmp <- data.frame(coef = object$mdl_h0$theta)
   if (object$mdl_h0$control$getSE==TRUE){
     frame_h0_tmp["s.e."] <- object$mdl_h0$theta_se
@@ -1525,7 +1566,7 @@ summary.LMCLRTest <- function(object, digits = getOption("digits"), ...){
   cat(paste("\nAIC = "),object$mdl_h1$AIC)
   cat(paste("\nBIC = "),object$mdl_h1$BIC)
   cat("\n")
-  cat("\nRodriguez-Rondon & Dufour (2025) Local Monte Carlo Likelihood Ratio Test\n")
+  cat("\nRodriguez-Rondon & Dufour (2026) Local Monte Carlo Likelihood Ratio Test\n")
   out <- data.frame(t(as.matrix(c(object$LRT_0, object$LRN_cv, object$pval))))
   colnames(out) <- c(names(object$LRT_0), names(object$LRN_cv), "p-value")
   rownames(out) <- "LMC_LRT"
@@ -1540,6 +1581,7 @@ summary.LMCLRTest <- function(object, digits = getOption("digits"), ...){
 #' @description This is a method for the function \code{summary()} for objects of the class \code{MMCLRTest}.
 #' 
 #' @inheritParams base::summary
+#' @param digits Integer determining the number of significant digits to print.
 #'
 #' @return The \code{MMCLRTest} object is returned invisibly.
 #' 
@@ -1547,7 +1589,7 @@ summary.LMCLRTest <- function(object, digits = getOption("digits"), ...){
 #' 
 #' @export
 summary.MMCLRTest <- function(object, digits = getOption("digits"), ...){
-  cat("\nRestricted Model\n") 
+  cat("Restricted Model\n") 
   frame_h0_tmp <- data.frame(coef = object$mdl_h0$theta)
   if (object$mdl_h0$control$getSE==TRUE){
     frame_h0_tmp["s.e."] <- object$mdl_h0$theta_se
@@ -1569,7 +1611,7 @@ summary.MMCLRTest <- function(object, digits = getOption("digits"), ...){
   cat(paste("\nAIC = "),object$mdl_h1$AIC)
   cat(paste("\nBIC = "),object$mdl_h1$BIC)
   cat("\n")
-  cat("\nRodriguez-Rondon & Dufour (2025) Maximized Monte Carlo Likelihood Ratio Test\n")
+  cat("\nRodriguez-Rondon & Dufour (2026) Maximized Monte Carlo Likelihood Ratio Test\n")
   out <- data.frame(t(as.matrix(c(object$LRT_0, object$pval))))
   colnames(out) <- c(names(object$LRT_0), "p-value")
   rownames(out) <- "MMC_LRT"
@@ -1583,6 +1625,7 @@ summary.MMCLRTest <- function(object, digits = getOption("digits"), ...){
 #' @description This is a method for the function \code{summary()} for objects of the class \code{BootLRTest}.
 #' 
 #' @inheritParams base::summary
+#' @param digits Integer determining the number of significant digits to print.
 #'
 #' @return The \code{BootLRTest} object is returned invisibly.
 #' 
@@ -1590,7 +1633,7 @@ summary.MMCLRTest <- function(object, digits = getOption("digits"), ...){
 #' 
 #' @export
 summary.BootLRTest <- function(object, digits = getOption("digits"), ...){
-  cat("\nRestricted Model\n") 
+  cat("Restricted Model\n") 
   frame_h0_tmp <- data.frame(coef = object$mdl_h0$theta)
   if (object$mdl_h0$control$getSE==TRUE){
     frame_h0_tmp["s.e."] <- object$mdl_h0$theta_se
@@ -1703,11 +1746,15 @@ predict.VARmdl <- function(object, ..., h = 10){
 #' @title Predict for a \code{HMmdl} object
 #'
 #' @description This is a method for the function \code{predict()} for objects of the class \code{HMmdl}.
-#' 
+#'
 #' @inheritParams stats::predict
 #' @param h max number of prediction periods
 #'
-#' @return a \code{(h x q)} matrix with predicted value values.
+#' @return A list with the following elements:
+#' \itemize{
+#'   \item predict: a \code{(h x q)} matrix with predicted values.
+#'   \item predictSt: a \code{(h x k)} matrix with predicted regime probabilities.
+#' }
 #' 
 #' @keywords internal
 #' 
@@ -1729,11 +1776,15 @@ predict.HMmdl <- function(object, ..., h = 10){
 #' @title Predict for a \code{MSARmdl} object
 #'
 #' @description This is a method for the function \code{predict()} for objects of the class \code{MSARmdl}.
-#' 
+#'
 #' @inheritParams stats::predict
 #' @param h max number of prediction periods
 #'
-#' @return a \code{(h x q)} matrix with predicted value values.
+#' @return A list with the following elements:
+#' \itemize{
+#'   \item predict: a \code{(h x q)} matrix with predicted values.
+#'   \item predictSt: a \code{(h x k)} matrix with predicted regime probabilities.
+#' }
 #' 
 #' @keywords internal
 #' 
@@ -1765,11 +1816,15 @@ predict.MSARmdl <- function(object, ..., h = 10){
 #' @title Predict for a \code{MSVARmdl} object
 #'
 #' @description This is a method for the function \code{predict()} for objects of the class \code{MSVARmdl}.
-#' 
+#'
 #' @inheritParams stats::predict
 #' @param h max number of prediction periods
 #'
-#' @return a \code{(h x q)} matrix with predicted value values.
+#' @return A list with the following elements:
+#' \itemize{
+#'   \item predict: a \code{(h x q)} matrix with predicted values.
+#'   \item predictSt: a \code{(h x k)} matrix with predicted regime probabilities.
+#' }
 #' 
 #' @keywords internal
 #' 
@@ -1837,8 +1892,8 @@ plot.simuAR <- function(x, ...){
 
 #' @title Plot of a \code{simuARX} object
 #'
-#' @description This is a method for the function \code{plot()} for objects of the class \code{simuAR}.
-#' 
+#' @description This is a method for the function \code{plot()} for objects of the class \code{simuARX}.
+#'
 #' @inheritParams base::plot
 #'
 #' @return The \code{simuARX} object is returned invisibly.
@@ -1870,8 +1925,8 @@ plot.simuVAR <- function(x, ...){
 
 #' @title Plot of a \code{simuVARX} object
 #'
-#' @description This is a method for the function \code{plot()} for objects of the class \code{simuVAR}.
-#' 
+#' @description This is a method for the function \code{plot()} for objects of the class \code{simuVARX}.
+#'
 #' @inheritParams base::plot
 #'
 #' @return The \code{simuVARX} object is returned invisibly.
@@ -1936,8 +1991,8 @@ plot.simuMSAR <- function(x, ...){
 
 #' @title Plot of a \code{simuMSARX} object
 #'
-#' @description This is a method for the function \code{plot()} for objects of the class \code{simuMSAR}.
-#' 
+#' @description This is a method for the function \code{plot()} for objects of the class \code{simuMSARX}.
+#'
 #' @inheritParams base::plot
 #'
 #' @return The \code{simuMSARX} object is returned invisibly.
@@ -1976,8 +2031,8 @@ plot.simuMSVAR <- function(x, ...){
 
 #' @title Plot of a \code{simuMSVARX} object
 #'
-#' @description This is a method for the function \code{plot()} for objects of the class \code{simuMSVAR}.
-#' 
+#' @description This is a method for the function \code{plot()} for objects of the class \code{simuMSVARX}.
+#'
 #' @inheritParams base::plot
 #'
 #' @return The \code{simuMSVARX} object is returned invisibly.

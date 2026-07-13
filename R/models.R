@@ -12,8 +12,8 @@
 #'   \item Z: A (\code{T x qz}) matrix with exogenous regressors (Optional) and where qz is the number of exogenous variables.
 #'   \item betaZ: A (\code{qz x q}) matrix  true coefficients on exogenous regressors (Optional) and where qz is the number of exogenous variables.
 #'   }
-#' @param burnin Number of simulated observations to remove from beginning. Default is \code{100}.
-#' 
+#' @param burnin Number of simulated observations to remove from beginning. Default is \code{0}.
+#'
 #' @return List with simulated series and its DGP parameters.
 #' 
 #' @example /inst/examples/simuNorm_examples.R
@@ -97,7 +97,8 @@ simuARX <- function(mdl_h0, burnin = 100){
 #' @param burnin Number of simulated observations to remove from beginning. Default is \code{100}.
 #' 
 #' @return List with simulated vector autoregressive series and its DGP parameters.
-#' 
+#'
+#' @example /inst/examples/simuVAR_examples.R
 #' @export
 simuVAR <- function(mdl_h0, burnin = 100){
   simu_output <- simuVAR_cpp(mdl_h0, burnin)
@@ -106,10 +107,10 @@ simuVAR <- function(mdl_h0, burnin = 100){
   return(simu_output)
 }
 
-#' @title Simulate VAR process
-#' 
-#' @description This function simulates a vector autoregresive process.
-#' 
+#' @title Simulate VARX process
+#'
+#' @description This function simulates a vector autoregressive process with exogenous regressors.
+#'
 #' @param mdl_h0 List containing the following DGP parameters
 #' \itemize{
 #'   \item n: Length of series.
@@ -125,7 +126,8 @@ simuVAR <- function(mdl_h0, burnin = 100){
 #' @param burnin Number of simulated observations to remove from beginning. Default is \code{100}.
 #' 
 #' @return List with simulated vector autoregressive series and its DGP parameters.
-#' 
+#'
+#' @example /inst/examples/simuVAR_examples.R
 #' @export
 simuVARX <- function(mdl_h0, burnin = 100){
   simu_output <- simuVARX_cpp(mdl_h0, burnin)
@@ -981,12 +983,15 @@ VARXmdl <- function(Y, p, Z, control = list()){
 #' @param control List with model options including:
 #' \itemize{
 #'  \item getSE: Boolean. If \code{TRUE} standard errors are computed and returned. If \code{FALSE} standard errors are not computed. Default is \code{TRUE}.
+#'  \item se_method: String determining the standard-error method. Options are \code{"hessian"} (default) and \code{"louis"} (Louis 1982 expected-information); the Louis method is used automatically as a fallback when the Hessian is ill-conditioned.
 #'  \item msmu: Boolean. If \code{TRUE} model is estimated with switch in mean. If \code{FALSE} model is estimated with constant mean. Default is \code{TRUE}.
 #'  \item msvar: Boolean. If \code{TRUE} model is estimated with switch in variance. If \code{FALSE} model is estimated with constant variance. Default is \code{TRUE}.
 #'  \item init_theta: vector of initial values. vector must contain \code{(1 x q)} vector \code{mu}, \code{vech(sigma)}, and \code{vec(P)} where sigma is a \code{(q x q)} covariance matrix.This is optional. Default is \code{NULL}, in which case \code{\link{initVals_MSARmdl}} is used to generate initial values.
 #'  \item method: string determining which method to use. Options are \code{'EM'} for EM algorithm or \code{'MLE'} for Maximum Likelihood Estimation. Default is \code{'EM'}.
 #'  \item maxit: integer determining the maximum number of EM iterations.
-#'  \item thtol: double determining the convergence criterion for the absolute difference in parameter estimates \code{theta} between iterations. Default is \code{1e-6}.
+#'  \item thtol: double determining the convergence criterion for the relative change in the parameter estimates \code{theta} between iterations (used when \code{conv} is \code{"theta"}, \code{"both"}, or \code{"both-A"}). Default is \code{1e-6}.
+#'  \item ltol: double determining the convergence criterion for the relative change in the log-likelihood between iterations (used when \code{conv} is \code{"loglik"}, \code{"both"}, \code{"loglik-A"}, or \code{"both-A"}). Default is \code{1e-7}.
+#'  \item conv: string determining the EM convergence criterion. \code{"loglik"} (the default) stops on the relative change in the log-likelihood; \code{"theta"} stops on the relative change in the parameters (the convention of Hamilton (1994) and of earlier versions of this package); \code{"both"} requires both, following Krolzig (1997); \code{"loglik-A"} and \code{"both-A"} replace the log-likelihood test with the Aitken-accelerated criterion of Bohning et al. (1994) and McLachlan and Krishnan (2008). Default is \code{"loglik"}.
 #'  \item maxit_converge: integer determining the maximum number of initial values attempted until solution is finite. For example, if parameters in \code{theta} or \code{logLike} are \code{NaN} another set of initial values (up to \code{maxit_converge}) is attempted until finite values are returned. This does not occur frequently for most types of data but may be useful in some cases. Once finite values are obtained, this counts as one iteration towards \code{use_diff_init}. Default is \code{500}.
 #'  \item use_diff_init: integer determining how many different initial values to try (that do not return \code{NaN}; see \code{maxit_converge}). Default is \code{1}.
 #'  \item mle_variance_constraint: double used to determine the lower bound on the smallest eigenvalue for the covariance matrix of each regime. Default is \code{1e-3}.
@@ -1016,8 +1021,9 @@ VARXmdl <- function(Y, p, Z, control = list()){
 #'   \item P: a \code{(k x k)} transition matrix.
 #'   \item pinf: a \code{(k x 1)} vector with limiting probabilities of each regime.
 #'   \item St: a \code{(T x k)} vector with smoothed probabilities of each regime at each time \code{t}.
-#'   \item deltath: double with maximum absolute difference in vector \code{theta} between last iteration.
+#'   \item deltath: double with the maximum relative change in vector \code{theta} on the last iteration.
 #'   \item iterations: number of EM iterations performed to achieve convergence (if less than \code{maxit}).
+#'   \item converged: Boolean. \code{TRUE} if the \code{conv} convergence criterion was met before \code{maxit} iterations, \code{FALSE} otherwise.
 #'   \item theta_0: vector of initial values used.
 #'   \item init_used: number of different initial values used to get a finite solution. See description of input \code{maxit_converge}.
 #'   \item msmu: Boolean. If \code{TRUE} model was estimated with switch in mean. If \code{FALSE} model was estimated with constant mean.
@@ -1034,21 +1040,27 @@ VARXmdl <- function(Y, p, Z, control = list()){
 #' }
 #' 
 #' @references Dempster, A. P., N. M. Laird, and D. B. Rubin. 1977. “Maximum Likelihood from Incomplete Data via the EM Algorithm.” \emph{Journal of the Royal Statistical Society}. Series B 39 (1): 1–38..
+#' @references Böhning, D., E. Dietz, R. Schaub, P. Schlattmann, and B. G. Lindsay. 1994. “The distribution of the likelihood ratio for mixtures of densities from the one-parameter exponential family.” \emph{Annals of the Institute of Statistical Mathematics} 46 (2): 373–388.
+#' @references McLachlan, G. J., and T. Krishnan. 2008. \emph{The EM Algorithm and Extensions}. 2nd ed. Hoboken, New Jersey: John Wiley & Sons.
 #' @references Hamilton, James D. 1990. “Analysis of time series subject to changes in regime.” \emph{Journal of econometrics}, 45 (1-2): 39–70.
 #' @references Krolzig, Hans-Martin. 1997. “The markov-switching vector autoregressive model.”. Springer.
 #' 
 #' @seealso \code{\link{Nmdl}}
+#' @example /inst/examples/HMmdl_examples.R
 #' @export
 HMmdl <- function(Y, k, Z = NULL, control = list()){
   # ----- Set control values
   con <- list(getSE = TRUE,
-              msmu = TRUE, 
+              se_method = "hessian",
+              msmu = TRUE,
               msvar = TRUE,
               init_theta = NULL,
               method = "EM",
               maxit = 1000,
-              thtol = 1.e-6, 
-              maxit_converge = 500, 
+              thtol = 1.e-6,
+              ltol = 1.e-7,
+              conv = "loglik",
+              maxit_converge = 500,
               use_diff_init = 1,
               mle_variance_constraint = 1e-3,
               mle_theta_low = NULL,
@@ -1064,10 +1076,13 @@ HMmdl <- function(Y, k, Z = NULL, control = list()){
   }
   con$Z = Z
   # ---------- Optimization options
-  optim_options <- list(maxit = con$maxit, thtol = con$thtol)
+  con$conv <- match.arg(con$conv, c("theta", "loglik", "both", "loglik-A", "both-A"))
+  if (!isTRUE(con$use_diff_init >= 1)) stop("'use_diff_init' must be an integer >= 1.")
+  if (!is.null(con$maxit_converge) && !isTRUE(con$maxit_converge >= 1)) stop("'maxit_converge' must be an integer >= 1.")
+  optim_options <- list(maxit = con$maxit, thtol = con$thtol, ltol = con$ltol, conv = con$conv)
   # pre-define list and matrix length for results
   output_all <- list(con$use_diff_init)
-  max_loglik <- matrix(0, con$use_diff_init, 1)
+  max_loglik <- matrix(-Inf, con$use_diff_init, 1)
   # ---------- Estimate linear model to use for initial values & transformed series
   init_control <- list(const = TRUE, getSE = FALSE)
   init_mdl <- Nmdl(Y, Z, init_control)
@@ -1131,8 +1146,9 @@ HMmdl <- function(Y, k, Z = NULL, control = list()){
           }
           init_used = init_used + 1
         }
+        if (is.null(output_tmp)) output_tmp <- list(logLike=-Inf, theta=rep(NA_real_, length(theta_0)))
         if (is.null(Z)){
-          output_tmp$betaZ <- NULL    
+          output_tmp$betaZ <- NULL
         }
         output_tmp$theta_0 <- theta_0
         max_loglik[xi] <- output_tmp$logLike
@@ -1167,9 +1183,10 @@ HMmdl <- function(Y, k, Z = NULL, control = list()){
   }
   # ----- Obtain variables of interest
   q <- ncol(Y)
-  inter <- output$mu
+  mu_kq  <- matrix(output$mu, nrow=k, ncol=q, byrow=TRUE)  # ensure k×q for msmu=FALSE (scalar) and msmu=TRUE
+  inter  <- mu_kq
   if (!is.null(Z)){
-    inter <- output$mu - matrix(1,k,1)%*%(matrix(colMeans(Z),1,ncol(Z))%*%output$betaZ)  
+    inter <- mu_kq - matrix(1,k,1)%*%(matrix(colMeans(Z),1,ncol(Z))%*%output$betaZ)
   }
   if (q>1){
     beta <- list()
@@ -1208,7 +1225,7 @@ HMmdl <- function(Y, k, Z = NULL, control = list()){
               theta_sig_ind = theta_sig_ind, theta_var_ind = theta_var_ind, theta_P_ind = theta_P_ind, 
               n = init_mdl$n, q = q, p = 0, k = k, control = con,
               P = output$P, pinf = output$pinf, St = output$St, logLike = output$logLike,  
-              deltath = output$deltath, iterations = output$iterations, theta_0 = output$theta_0,
+              deltath = output$deltath, iterations = output$iterations, converged = output$converged, theta_0 = output$theta_0,
               init_used = output$init_used, msmu = con$msmu, msvar = con$msvar, exog = (!is.null(Z)))
   # Define class
   class(out) <- "HMmdl"
@@ -1245,7 +1262,15 @@ HMmdl <- function(Y, k, Z = NULL, control = list()){
     }
   }
   if (con$getSE==TRUE){
-    out <- thetaSE(out)
+    if (identical(con$se_method, "louis")) {
+      out <- thetaSE_louis(out)
+    } else {
+      out <- thetaSE(out)
+      if (all(is.na(out$theta_se))) {
+        message("Hessian-based SEs failed; falling back to Louis (1982) method.")
+        out <- thetaSE_louis(out)
+      }
+    }
   }
   if (is.null(con$init_theta)){
     out$trace <- output_all
@@ -1265,12 +1290,15 @@ HMmdl <- function(Y, k, Z = NULL, control = list()){
 #' @param control List with model options including:
 #' \itemize{
 #'  \item getSE: Boolean. If \code{TRUE} standard errors are computed and returned. If \code{FALSE} standard errors are not computed. Default is \code{TRUE}.
+#'  \item se_method: String determining the standard-error method. Options are \code{"hessian"} (default) and \code{"louis"} (Louis 1982 expected-information); the Louis method is used automatically as a fallback when the Hessian is ill-conditioned.
 #'  \item msmu: Boolean. If \code{TRUE} model is estimated with switch in mean. If \code{FALSE} model is estimated with constant mean. Default is \code{TRUE}.
 #'  \item msvar: Boolean. If \code{TRUE} model is estimated with switch in variance. If \code{FALSE} model is estimated with constant variance. Default is \code{TRUE}.
 #'  \item init_theta: vector of initial values. vector must contain \code{(1 x q)} vector \code{mu}, \code{vech(sigma)}, and \code{vec(P)} where sigma is a \code{(q x q)} covariance matrix.This is optional. Default is \code{NULL}, in which case \code{\link{initVals_MSARmdl}} is used to generate initial values.
 #'  \item method: string determining which method to use. Options are \code{'EM'} for EM algorithm or \code{'MLE'} for Maximum Likelihood Estimation.  Default is \code{'EM'}.
 #'  \item maxit: integer determining the maximum number of EM iterations.
-#'  \item thtol: double determining the convergence criterion for the absolute difference in parameter estimates \code{theta} between iterations. Default is \code{1e-6}.
+#'  \item thtol: double determining the convergence criterion for the relative change in the parameter estimates \code{theta} between iterations (used when \code{conv} is \code{"theta"}, \code{"both"}, or \code{"both-A"}). Default is \code{1e-6}.
+#'  \item ltol: double determining the convergence criterion for the relative change in the log-likelihood between iterations (used when \code{conv} is \code{"loglik"}, \code{"both"}, \code{"loglik-A"}, or \code{"both-A"}). Default is \code{1e-7}.
+#'  \item conv: string determining the EM convergence criterion. \code{"loglik"} (the default) stops on the relative change in the log-likelihood; \code{"theta"} stops on the relative change in the parameters (the convention of Hamilton (1994) and of earlier versions of this package); \code{"both"} requires both, following Krolzig (1997); \code{"loglik-A"} and \code{"both-A"} replace the log-likelihood test with the Aitken-accelerated criterion of Bohning et al. (1994) and McLachlan and Krishnan (2008). Default is \code{"loglik"}.
 #'  \item maxit_converge: integer determining the maximum number of initial values attempted until solution is finite. For example, if parameters in \code{theta} or \code{logLike} are \code{NaN} another set of initial values (up to \code{maxit_converge}) is attempted until finite values are returned. This does not occur frequently for most types of data but may be useful in some cases. Once finite values are obtained, this counts as one iteration towards \code{use_diff_init}. Default is \code{500}.
 #'  \item use_diff_init: integer determining how many different initial values to try (that do not return \code{NaN}; see \code{maxit_converge}). Default is \code{1}.
 #'  \item mle_stationary_constraint: Boolean determining if only stationary solutions are considered (if \code{TRUE}) or not (if \code{FALSE}). Default is \code{TRUE}.
@@ -1305,8 +1333,9 @@ HMmdl <- function(Y, k, Z = NULL, control = list()){
 #'   \item P: a \code{(k x k)} transition matrix.
 #'   \item pinf: a \code{(k x 1)} vector with limiting probabilities of each regime.
 #'   \item St: a \code{(T x k)} vector with smoothed probabilities of each regime at each time \code{t}.
-#'   \item deltath: double with maximum absolute difference in vector \code{theta} between last iteration.
+#'   \item deltath: double with the maximum relative change in vector \code{theta} on the last iteration.
 #'   \item iterations: number of EM iterations performed to achieve convergence (if less than \code{maxit}).
+#'   \item converged: Boolean. \code{TRUE} if the \code{conv} convergence criterion was met before \code{maxit} iterations, \code{FALSE} otherwise.
 #'   \item theta_0: vector of initial values used.
 #'   \item init_used: number of different initial values used to get a finite solution. See description of input \code{maxit_converge}.
 #'   \item msmu: Boolean. If \code{TRUE} model was estimated with switch in mean. If \code{FALSE} model was estimated with constant mean.
@@ -1323,6 +1352,8 @@ HMmdl <- function(Y, k, Z = NULL, control = list()){
 #' }
 #' 
 #' @references Dempster, A. P., N. M. Laird, and D. B. Rubin. 1977. “Maximum Likelihood from Incomplete Data via the EM Algorithm.” \emph{Journal of the Royal Statistical Society}. Series B 39 (1): 1–38..
+#' @references Böhning, D., E. Dietz, R. Schaub, P. Schlattmann, and B. G. Lindsay. 1994. “The distribution of the likelihood ratio for mixtures of densities from the one-parameter exponential family.” \emph{Annals of the Institute of Statistical Mathematics} 46 (2): 373–388.
+#' @references McLachlan, G. J., and T. Krishnan. 2008. \emph{The EM Algorithm and Extensions}. 2nd ed. Hoboken, New Jersey: John Wiley & Sons.
 #' @references Hamilton, James D. 1990. “Analysis of time series subject to changes in regime.” \emph{Journal of econometrics}, 45 (1-2): 39–70.
 #' 
 #' @seealso \code{\link{ARmdl}}
@@ -1331,14 +1362,17 @@ HMmdl <- function(Y, k, Z = NULL, control = list()){
 MSARmdl <- function(Y, p, k, control = list()){
   # ----- Set control values
   con <- list(getSE = TRUE,
-              msmu = TRUE, 
+              se_method = "hessian",
+              msmu = TRUE,
               msvar = TRUE,
               init_theta = NULL,
               method = "EM",
-              maxit = 1000, 
-              thtol = 1.e-6, 
-              maxit_converge = 500, 
-              use_diff_init = 1, 
+              maxit = 1000,
+              thtol = 1.e-6,
+              ltol = 1.e-7,
+              conv = "loglik",
+              maxit_converge = 500,
+              use_diff_init = 1,
               mle_stationary_constraint = TRUE,
               mle_variance_constraint = 0.01,
               mle_theta_low = NULL,
@@ -1353,10 +1387,13 @@ MSARmdl <- function(Y, p, k, control = list()){
     stop("value for 'k' must be greater than or equal to 2.")
   }
   # ---------- Optimization options
-  optim_options <- list(maxit = con$maxit, thtol = con$thtol)
+  con$conv <- match.arg(con$conv, c("theta", "loglik", "both", "loglik-A", "both-A"))
+  if (!isTRUE(con$use_diff_init >= 1)) stop("'use_diff_init' must be an integer >= 1.")
+  if (!is.null(con$maxit_converge) && !isTRUE(con$maxit_converge >= 1)) stop("'maxit_converge' must be an integer >= 1.")
+  optim_options <- list(maxit = con$maxit, thtol = con$thtol, ltol = con$ltol, conv = con$conv)
   # pre-define list and matrix length for results
   output_all <- list()
-  max_loglik <- matrix(0, con$use_diff_init, 1)
+  max_loglik <- matrix(-Inf, con$use_diff_init, 1)
   # ---------- Estimate linear model to use for initial values & transformed series
   init_control <- list(const = TRUE, getSE = FALSE)
   init_mdl <- ARmdl(Y, p = p, control = init_control)
@@ -1372,12 +1409,20 @@ MSARmdl <- function(Y, p, k, control = list()){
           # ----- Initial values
           theta_0 <- initVals_MSARmdl(init_mdl, k)  
           # ----- Estimate using EM algorithm and initial values provided
-          output_tmp <- MSARmdl_em(theta_0, init_mdl, k, optim_options)
+          output_tmp <- NULL
+          try(
+            output_tmp <- MSARmdl_em(theta_0, init_mdl, k, optim_options)
+          )
           # ----- Convergence check
-          logLike_tmp <- output_tmp$logLike
-          theta_tmp <- output_tmp$theta
-          converge_check <- ((is.finite(output_tmp$logLike)) & (all(is.finite(output_tmp$theta))))
-          init_used <- init_used + 1
+          if (is.null(output_tmp)==FALSE){
+            logLike_tmp <- output_tmp$logLike
+            theta_tmp <- output_tmp$theta
+            converge_check <- ((is.finite(output_tmp$logLike)) & (all(is.finite(output_tmp$theta))))
+            init_used <- init_used + 1
+          }else{
+            converge_check <- FALSE
+            init_used <- init_used + 1
+          }
         }
         output_tmp$theta_0 <- theta_0
         max_loglik[xi] <- output_tmp$logLike
@@ -1407,8 +1452,9 @@ MSARmdl <- function(Y, p, k, control = list()){
           }else{
             converge_check <- FALSE
           }
-          init_used = init_used + 1 
+          init_used = init_used + 1
         }
+        if (is.null(output_tmp)) output_tmp <- list(logLike=-Inf, theta=rep(NA_real_, length(theta_0)))
         output_tmp$theta_0 <- theta_0
         max_loglik[xi] <- output_tmp$logLike
         output_tmp$init_used <- init_used
@@ -1421,9 +1467,9 @@ MSARmdl <- function(Y, p, k, control = list()){
       xl = which.max(max_loglik)
       if (length(xl)==0){
         warning("Model(s) did not converge. Use higher 'use_diff_init' or 'maxit_converge'.")
-        output <- output_all[[1]] 
+        output <- output_all[[1]]
       }else{
-        output <- output_all[[xl]] 
+        output <- output_all[[xl]]
       }
     }
   }else{
@@ -1431,15 +1477,20 @@ MSARmdl <- function(Y, p, k, control = list()){
       # ----- Estimate using EM algorithm and initial values provided
       output <- MSARmdl_em(con$init_theta, init_mdl, k, optim_options)
       output$theta_0 <- con$init_theta
-      output$init_used <- 1  
+      output$init_used <- 1
     }else if (con$method=="MLE"){
       init_mdl$mle_stationary_constraint <- con$mle_stationary_constraint
       init_mdl$mle_variance_constraint <- con$mle_variance_constraint
-      # ----- Estimate using roptim and initial values provided 
-      output <- MSARmdl_mle(con$init_theta, init_mdl, k, optim_options)  
+      # ----- Estimate using roptim and initial values provided
+      output <- MSARmdl_mle(con$init_theta, init_mdl, k, optim_options)
       output$theta_0 <- con$init_theta
-      output$init_used <- 1  
+      output$init_used <- 1
     }
+  }
+  if (!is.finite(output$logLike) || !all(is.finite(output$theta))) {
+    warning("MSARmdl estimation produced non-finite parameters. ",
+            "Try: higher 'use_diff_init', different starting values, ",
+            "or verify data has no constant segments or NaN values.")
   }
   if (con$msmu==FALSE){
     output$mu <- matrix(output$mu, nrow=k, ncol=1, byrow=TRUE) 
@@ -1470,7 +1521,7 @@ MSARmdl <- function(Y, p, k, control = list()){
               theta_sig_ind = theta_sig_ind, theta_var_ind = theta_var_ind, theta_P_ind = theta_P_ind, 
               stationary = stationary, n = init_mdl$n, q = 1, p = p, k = k, control = con,
               P = output$P, pinf = output$pinf, St = output$St, logLike = output$logLike, 
-              deltath = output$deltath, iterations = output$iterations, theta_0 = output$theta_0, 
+              deltath = output$deltath, iterations = output$iterations, converged = output$converged, theta_0 = output$theta_0, 
               init_used = output$init_used, msmu = con$msmu, msvar = con$msvar)
   # Define class
   class(out) <- "MSARmdl"
@@ -1484,7 +1535,15 @@ MSARmdl <- function(Y, p, k, control = list()){
                         if (con$msvar==TRUE) paste0("sig_", (1:k)) else "sig",
                         paste0("p_",c(sapply((1:k),  function(x) paste0(x, (1:k)) ))))
   if (con$getSE==TRUE){
-    out <- thetaSE(out)
+    if (identical(con$se_method, "louis")) {
+      out <- thetaSE_louis(out)
+    } else {
+      out <- thetaSE(out)
+      if (all(is.na(out$theta_se))) {
+        message("Hessian-based SEs failed; falling back to Louis (1982) method.")
+        out <- thetaSE_louis(out)
+      }
+    }
   }
   if (is.null(con$init_theta)){
     out$trace <- output_all
@@ -1493,23 +1552,26 @@ MSARmdl <- function(Y, p, k, control = list()){
 }
 
 
-#' @title Markov-switching autoregressive model 
-#' 
-#' @description This function estimates a Markov-switching autoregressive model
-#' 
-#' @param Y a \code{(T x 1)} vector with observational data. 
-#' @param p integer for the number of lags to use in estimation. Must be greater than or equal to \code{1}. 
+#' @title Markov-switching autoregressive model with exogenous regressors
+#'
+#' @description This function estimates a Markov-switching autoregressive model with exogenous regressors.
+#'
+#' @param Y a \code{(T x 1)} vector with observational data.
+#' @param p integer for the number of lags to use in estimation. Must be greater than or equal to \code{1}.
 #' @param k integer for the number of regimes to use in estimation. Must be greater than or equal to \code{2}.
-#' @param Z a \code{(T x qz)} matrix of exogenous regressors. 
+#' @param Z a \code{(T x qz)} matrix of exogenous regressors.
 #' @param control List with model options including:
 #' \itemize{
 #'  \item getSE: Boolean. If \code{TRUE} standard errors are computed and returned. If \code{FALSE} standard errors are not computed. Default is \code{TRUE}.
+#'  \item se_method: String determining the standard-error method. Options are \code{"hessian"} (default) and \code{"louis"} (Louis 1982 expected-information); the Louis method is used automatically as a fallback when the Hessian is ill-conditioned.
 #'  \item msmu: Boolean. If \code{TRUE} model is estimated with switch in mean. If \code{FALSE} model is estimated with constant mean. Default is \code{TRUE}.
 #'  \item msvar: Boolean. If \code{TRUE} model is estimated with switch in variance. If \code{FALSE} model is estimated with constant variance. Default is \code{TRUE}.
 #'  \item init_theta: vector of initial values. vector must contain \code{(1 x q)} vector \code{mu}, \code{vech(sigma)}, and \code{vec(P)} where sigma is a \code{(q x q)} covariance matrix.This is optional. Default is \code{NULL}, in which case \code{\link{initVals_MSARmdl}} is used to generate initial values.
 #'  \item method: string determining which method to use. Options are \code{'EM'} for EM algorithm or \code{'MLE'} for Maximum Likelihood Estimation.  Default is \code{'EM'}.
 #'  \item maxit: integer determining the maximum number of EM iterations.
-#'  \item thtol: double determining the convergence criterion for the absolute difference in parameter estimates \code{theta} between iterations. Default is \code{1e-6}.
+#'  \item thtol: double determining the convergence criterion for the relative change in the parameter estimates \code{theta} between iterations (used when \code{conv} is \code{"theta"}, \code{"both"}, or \code{"both-A"}). Default is \code{1e-6}.
+#'  \item ltol: double determining the convergence criterion for the relative change in the log-likelihood between iterations (used when \code{conv} is \code{"loglik"}, \code{"both"}, \code{"loglik-A"}, or \code{"both-A"}). Default is \code{1e-7}.
+#'  \item conv: string determining the EM convergence criterion. \code{"loglik"} (the default) stops on the relative change in the log-likelihood; \code{"theta"} stops on the relative change in the parameters (the convention of Hamilton (1994) and of earlier versions of this package); \code{"both"} requires both, following Krolzig (1997); \code{"loglik-A"} and \code{"both-A"} replace the log-likelihood test with the Aitken-accelerated criterion of Bohning et al. (1994) and McLachlan and Krishnan (2008). Default is \code{"loglik"}.
 #'  \item maxit_converge: integer determining the maximum number of initial values attempted until solution is finite. For example, if parameters in \code{theta} or \code{logLike} are \code{NaN} another set of initial values (up to \code{maxit_converge}) is attempted until finite values are returned. This does not occur frequently for most types of data but may be useful in some cases. Once finite values are obtained, this counts as one iteration towards \code{use_diff_init}. Default is \code{500}.
 #'  \item use_diff_init: integer determining how many different initial values to try (that do not return \code{NaN}; see \code{maxit_converge}). Default is \code{1}.
 #'  \item mle_stationary_constraint: Boolean determining if only stationary solutions are considered (if \code{TRUE}) or not (if \code{FALSE}). Default is \code{TRUE}.
@@ -1518,7 +1580,7 @@ MSARmdl <- function(Y, p, k, control = list()){
 #'  \item mle_theta_upp: Vector with upper bounds on parameters (Used only if method = "MLE"). Default is \code{NULL}.
 #' }
 #' 
-#' @return List of class \code{MSARmdl} (\code{S3} object) with model attributes including:
+#' @return List of class \code{MSARXmdl} (\code{S3} object) with model attributes including:
 #' \itemize{
 #'   \item y: a \code{(T x 1)} matrix of observations.
 #'   \item X: a \code{(T-p x p + const)} matrix of lagged observations with a leading column of \code{1}s.
@@ -1527,7 +1589,7 @@ MSARmdl <- function(Y, p, k, control = list()){
 #'   \item resid: a \code{(T x 1)} matrix of residuals.
 #'   \item intercept: a \code{(k x 1)} vector of estimated intercepts of each process.
 #'   \item mu: a \code{(k x 1)} vector of estimated means of each process.
-#'   \item beta: a \code{((1 + p + qz) x k)} matrix of estimated coefficients. 
+#'   \item beta: a \code{((1 + p + qz) x k)} matrix of estimated coefficients.
 #'   \item betaZ: a \code{(qz x q)} matrix of estimated exogenous regressor coefficients.
 #'   \item phi: estimates of autoregressive coefficients.
 #'   \item stdev: a \code{(k x 1)} vector of estimated standard deviation of each process.
@@ -1545,8 +1607,9 @@ MSARmdl <- function(Y, p, k, control = list()){
 #'   \item P: a \code{(k x k)} transition matrix.
 #'   \item pinf: a \code{(k x 1)} vector with limiting probabilities of each regime.
 #'   \item St: a \code{(T x k)} vector with smoothed probabilities of each regime at each time \code{t}.
-#'   \item deltath: double with maximum absolute difference in vector \code{theta} between last iteration.
+#'   \item deltath: double with the maximum relative change in vector \code{theta} on the last iteration.
 #'   \item iterations: number of EM iterations performed to achieve convergence (if less than \code{maxit}).
+#'   \item converged: Boolean. \code{TRUE} if the \code{conv} convergence criterion was met before \code{maxit} iterations, \code{FALSE} otherwise.
 #'   \item theta_0: vector of initial values used.
 #'   \item init_used: number of different initial values used to get a finite solution. See description of input \code{maxit_converge}.
 #'   \item msmu: Boolean. If \code{TRUE} model was estimated with switch in mean. If \code{FALSE} model was estimated with constant mean.
@@ -1563,6 +1626,8 @@ MSARmdl <- function(Y, p, k, control = list()){
 #' }
 #' 
 #' @references Dempster, A. P., N. M. Laird, and D. B. Rubin. 1977. “Maximum Likelihood from Incomplete Data via the EM Algorithm.” \emph{Journal of the Royal Statistical Society}. Series B 39 (1): 1–38..
+#' @references Böhning, D., E. Dietz, R. Schaub, P. Schlattmann, and B. G. Lindsay. 1994. “The distribution of the likelihood ratio for mixtures of densities from the one-parameter exponential family.” \emph{Annals of the Institute of Statistical Mathematics} 46 (2): 373–388.
+#' @references McLachlan, G. J., and T. Krishnan. 2008. \emph{The EM Algorithm and Extensions}. 2nd ed. Hoboken, New Jersey: John Wiley & Sons.
 #' @references Hamilton, James D. 1990. “Analysis of time series subject to changes in regime.” \emph{Journal of econometrics}, 45 (1-2): 39–70.
 #' 
 #' @seealso \code{\link{ARmdl}}
@@ -1571,14 +1636,17 @@ MSARmdl <- function(Y, p, k, control = list()){
 MSARXmdl <- function(Y, p, k, Z, control = list()){
   # ----- Set control values
   con <- list(getSE = TRUE,
-              msmu = TRUE, 
+              se_method = "hessian",
+              msmu = TRUE,
               msvar = TRUE,
               init_theta = NULL,
               method = "EM",
-              maxit = 1000, 
-              thtol = 1.e-6, 
-              maxit_converge = 500, 
-              use_diff_init = 1, 
+              maxit = 1000,
+              thtol = 1.e-6,
+              ltol = 1.e-7,
+              conv = "loglik",
+              maxit_converge = 500,
+              use_diff_init = 1,
               mle_stationary_constraint = TRUE,
               mle_variance_constraint = 0.01,
               mle_theta_low = NULL,
@@ -1594,10 +1662,13 @@ MSARXmdl <- function(Y, p, k, Z, control = list()){
   }
   con$Z = Z
   # ---------- Optimization options
-  optim_options <- list(maxit = con$maxit, thtol = con$thtol)
+  con$conv <- match.arg(con$conv, c("theta", "loglik", "both", "loglik-A", "both-A"))
+  if (!isTRUE(con$use_diff_init >= 1)) stop("'use_diff_init' must be an integer >= 1.")
+  if (!is.null(con$maxit_converge) && !isTRUE(con$maxit_converge >= 1)) stop("'maxit_converge' must be an integer >= 1.")
+  optim_options <- list(maxit = con$maxit, thtol = con$thtol, ltol = con$ltol, conv = con$conv)
   # pre-define list and matrix length for results
   output_all <- list()
-  max_loglik <- matrix(0, con$use_diff_init, 1)
+  max_loglik <- matrix(-Inf, con$use_diff_init, 1)
   # ---------- Estimate linear model to use for initial values & transformed series
   init_control <- list(const = TRUE, getSE = FALSE)
   init_mdl <- ARXmdl(Y, p = p, Z = Z, control = init_control)
@@ -1613,12 +1684,20 @@ MSARXmdl <- function(Y, p, k, Z, control = list()){
           # ----- Initial values
           theta_0 <- initVals_MSARXmdl(init_mdl, k)  
           # ----- Estimate using EM algorithm and initial values provided
-          output_tmp <- MSARXmdl_em(theta_0, init_mdl, k, optim_options)
+          output_tmp <- NULL
+          try(
+            output_tmp <- MSARXmdl_em(theta_0, init_mdl, k, optim_options)
+          )
           # ----- Convergence check
-          logLike_tmp <- output_tmp$logLike
-          theta_tmp <- output_tmp$theta
-          converge_check <- ((is.finite(output_tmp$logLike)) & (all(is.finite(output_tmp$theta))))
-          init_used <- init_used + 1
+          if (is.null(output_tmp)==FALSE){
+            logLike_tmp <- output_tmp$logLike
+            theta_tmp <- output_tmp$theta
+            converge_check <- ((is.finite(output_tmp$logLike)) & (all(is.finite(output_tmp$theta))))
+            init_used <- init_used + 1
+          }else{
+            converge_check <- FALSE
+            init_used <- init_used + 1
+          }
         }
         output_tmp$theta_0 <- theta_0
         max_loglik[xi] <- output_tmp$logLike
@@ -1648,8 +1727,9 @@ MSARXmdl <- function(Y, p, k, Z, control = list()){
           }else{
             converge_check <- FALSE
           }
-          init_used = init_used + 1 
+          init_used = init_used + 1
         }
+        if (is.null(output_tmp)) output_tmp <- list(logLike=-Inf, theta=rep(NA_real_, length(theta_0)))
         output_tmp$theta_0 <- theta_0
         max_loglik[xi] <- output_tmp$logLike
         output_tmp$init_used <- init_used
@@ -1662,7 +1742,7 @@ MSARXmdl <- function(Y, p, k, Z, control = list()){
       xl = which.max(max_loglik)
       if (length(xl)==0){
         warning("Model(s) did not converge. Use higher 'use_diff_init' or 'maxit_converge'.")
-        output <- output_all[[1]] 
+        output <- output_all[[1]]
       }else{
         output <- output_all[[xl]] 
       }
@@ -1712,7 +1792,7 @@ MSARXmdl <- function(Y, p, k, Z, control = list()){
               theta_sig_ind = theta_sig_ind, theta_var_ind = theta_var_ind, theta_P_ind = theta_P_ind, 
               stationary = stationary, n = init_mdl$n, q = 1, p = p, k = k, control = con,
               P = output$P, pinf = output$pinf, St = output$St, logLike = output$logLike, 
-              deltath = output$deltath, iterations = output$iterations, theta_0 = output$theta_0, 
+              deltath = output$deltath, iterations = output$iterations, converged = output$converged, theta_0 = output$theta_0, 
               init_used = output$init_used, msmu = con$msmu, msvar = con$msvar)
   # Define class
   class(out) <- "MSARmdl"
@@ -1727,7 +1807,15 @@ MSARXmdl <- function(Y, p, k, Z, control = list()){
                         if (con$msvar==TRUE) paste0("sig_", (1:k)) else "sig",
                         paste0("p_",c(sapply((1:k),  function(x) paste0(x, (1:k)) ))))
   if (con$getSE==TRUE){
-    out <- thetaSE(out)
+    if (identical(con$se_method, "louis")) {
+      out <- thetaSE_louis(out)
+    } else {
+      out <- thetaSE(out)
+      if (all(is.na(out$theta_se))) {
+        message("Hessian-based SEs failed; falling back to Louis (1982) method.")
+        out <- thetaSE_louis(out)
+      }
+    }
   }
   if (is.null(con$init_theta)){
     out$trace <- output_all
@@ -1747,12 +1835,15 @@ MSARXmdl <- function(Y, p, k, Z, control = list()){
 #' @param control List with optimization options including:
 #' \itemize{
 #'  \item getSE: Boolean. If \code{TRUE} standard errors are computed and returned. If \code{FALSE} standard errors are not computed. Default is \code{TRUE}.
+#'  \item se_method: String determining the standard-error method. Options are \code{"hessian"} (default) and \code{"louis"} (Louis 1982 expected-information); the Louis method is used automatically as a fallback when the Hessian is ill-conditioned.
 #'  \item msmu: Boolean. If \code{TRUE} model is estimated with switch in mean. If \code{FALSE} model is estimated with constant mean. Default is \code{TRUE}.
 #'  \item msvar: Boolean. If \code{TRUE} model is estimated with switch in variance. If \code{FALSE} model is estimated with constant variance. Default is \code{TRUE}.
 #'  \item init_theta: vector of initial values. vector must contain \code{(1 x q)} vector \code{mu}, \code{vech(sigma)}, and \code{vec(P)} where sigma is a \code{(q x q)} covariance matrix. This is optional. Default is \code{NULL}, in which case \code{\link{initVals_MSARmdl}} is used to generate initial values.
 #'  \item method: string determining which method to use. Options are \code{'EM'} for EM algorithm or \code{'MLE'} for Maximum Likelihood Estimation.  Default is \code{'EM'}.
 #'  \item maxit: integer determining the maximum number of EM iterations.
-#'  \item thtol: double determining the convergence criterion for the absolute difference in parameter estimates \code{theta} between iterations. Default is \code{1e-6}.
+#'  \item thtol: double determining the convergence criterion for the relative change in the parameter estimates \code{theta} between iterations (used when \code{conv} is \code{"theta"}, \code{"both"}, or \code{"both-A"}). Default is \code{1e-6}.
+#'  \item ltol: double determining the convergence criterion for the relative change in the log-likelihood between iterations (used when \code{conv} is \code{"loglik"}, \code{"both"}, \code{"loglik-A"}, or \code{"both-A"}). Default is \code{1e-7}.
+#'  \item conv: string determining the EM convergence criterion. \code{"loglik"} (the default) stops on the relative change in the log-likelihood; \code{"theta"} stops on the relative change in the parameters (the convention of Hamilton (1994) and of earlier versions of this package); \code{"both"} requires both, following Krolzig (1997); \code{"loglik-A"} and \code{"both-A"} replace the log-likelihood test with the Aitken-accelerated criterion of Bohning et al. (1994) and McLachlan and Krishnan (2008). Default is \code{"loglik"}.
 #'  \item maxit_converge: integer determining the maximum number of initial values attempted until solution is finite. For example, if parameters in \code{theta} or \code{logLike} are \code{NaN} another set of initial values (up to \code{maxit_converge}) is attempted until finite values are returned. This does not occur frequently for most types of data but may be useful in some cases. Once finite values are obtained, this counts as one iteration towards \code{use_diff_init}. Default is \code{500}.
 #'  \item use_diff_init: integer determining how many different initial values to try (that do not return \code{NaN}; see \code{maxit_converge}). Default is \code{1}.
 #'  \item mle_stationary_constraint: Boolean determining if only stationary solutions are considered (if \code{TRUE}) or not (if \code{FALSE}). Default is \code{TRUE}.
@@ -1788,8 +1879,9 @@ MSARXmdl <- function(Y, p, k, Z, control = list()){
 #'   \item P: a \code{(k x k)} transition matrix.
 #'   \item pinf: a \code{(k x 1)} vector with limiting probabilities of each regime.
 #'   \item St: a \code{(T x k)} vector with smoothed probabilities of each regime at each time \code{t}.
-#'   \item deltath: double with maximum absolute difference in vector \code{theta} between last iteration.
+#'   \item deltath: double with the maximum relative change in vector \code{theta} on the last iteration.
 #'   \item iterations: number of EM iterations performed to achieve convergence (if less than \code{maxit}).
+#'   \item converged: Boolean. \code{TRUE} if the \code{conv} convergence criterion was met before \code{maxit} iterations, \code{FALSE} otherwise.
 #'   \item theta_0: vector of initial values used.
 #'   \item init_used: number of different initial values used to get a finite solution. See description of input \code{maxit_converge}.
 #'   \item msmu: Boolean. If \code{TRUE} model was estimated with switch in mean. If \code{FALSE} model was estimated with constant mean.
@@ -1804,10 +1896,10 @@ MSARXmdl <- function(Y, p, k, Z, control = list()){
 #'   \item theta_se: standard errors of parameters in \code{theta}.  Only returned if \code{getSE=TRUE}.
 #'   \item trace: List with Lists of estimation output for each initial value used due to \code{use_diff_init > 1}.
 #' }
-#' 
-#' @return List with model characteristics
-#' 
+#'
 #' @references Dempster, A. P., N. M. Laird, and D. B. Rubin. 1977. “Maximum Likelihood from Incomplete Data via the EM Algorithm.” \emph{Journal of the Royal Statistical Society}. Series B 39 (1): 1–38..
+#' @references Böhning, D., E. Dietz, R. Schaub, P. Schlattmann, and B. G. Lindsay. 1994. “The distribution of the likelihood ratio for mixtures of densities from the one-parameter exponential family.” \emph{Annals of the Institute of Statistical Mathematics} 46 (2): 373–388.
+#' @references McLachlan, G. J., and T. Krishnan. 2008. \emph{The EM Algorithm and Extensions}. 2nd ed. Hoboken, New Jersey: John Wiley & Sons.
 #' @references Krolzig, Hans-Martin. 1997. “The markov-switching vector autoregressive model.”. Springer.
 #'  
 #' @seealso \code{\link{VARmdl}}
@@ -1816,13 +1908,16 @@ MSARXmdl <- function(Y, p, k, Z, control = list()){
 MSVARmdl <- function(Y, p, k, control = list()){
   # ----- Set control values
   con <- list(getSE = TRUE,
-              msmu = TRUE, 
+              se_method = "hessian",
+              msmu = TRUE,
               msvar = TRUE,
               init_theta = NULL,
               method = "EM",
               maxit = 1000,
-              thtol = 1.e-6, 
-              maxit_converge = 500, 
+              thtol = 1.e-6,
+              ltol = 1.e-7,
+              conv = "loglik",
+              maxit_converge = 500,
               use_diff_init = 1,
               mle_stationary_constraint = TRUE,
               mle_variance_constraint = 1e-3,
@@ -1838,10 +1933,13 @@ MSVARmdl <- function(Y, p, k, control = list()){
     stop("value for 'k' must be greater than or equal to 2.")
   }
   # ---------- Optimization options
-  optim_options <- list(maxit = con$maxit, thtol = con$thtol)
+  con$conv <- match.arg(con$conv, c("theta", "loglik", "both", "loglik-A", "both-A"))
+  if (!isTRUE(con$use_diff_init >= 1)) stop("'use_diff_init' must be an integer >= 1.")
+  if (!is.null(con$maxit_converge) && !isTRUE(con$maxit_converge >= 1)) stop("'maxit_converge' must be an integer >= 1.")
+  optim_options <- list(maxit = con$maxit, thtol = con$thtol, ltol = con$ltol, conv = con$conv)
   # pre-define list and matrix length for results
   output_all <- list()
-  max_loglik <- matrix(0, con$use_diff_init, 1)
+  max_loglik <- matrix(-Inf, con$use_diff_init, 1)
   # ---------- Estimate linear model to use for initial values & transformed series
   init_control <- list(const = TRUE, getSE = FALSE)
   init_mdl <- VARmdl(Y, p = p, control = init_control)
@@ -1902,6 +2000,7 @@ MSVARmdl <- function(Y, p, k, control = list()){
           }
           init_used = init_used + 1
         }
+        if (is.null(output_tmp)) output_tmp <- list(logLike=-Inf, theta=rep(NA_real_, length(theta_0)))
         output_tmp$theta_0 <- theta_0
         max_loglik[xi] <- output_tmp$logLike
         output_tmp$init_used <- init_used
@@ -1914,7 +2013,7 @@ MSVARmdl <- function(Y, p, k, control = list()){
       xl = which.max(max_loglik)
       if (length(xl)==0){
         warning("Model(s) did not converge. Use higher 'use_diff_init' or 'maxit_converge'.")
-        output <- output_all[[1]] 
+        output <- output_all[[1]]
       }else{
         output <- output_all[[xl]] 
       }
@@ -1963,7 +2062,7 @@ MSVARmdl <- function(Y, p, k, control = list()){
   theta_P_ind     <- c(rep(0, q + q*(k-1)*con$msmu + phi_len + Nsig + Nsig*(k-1)*con$msvar), rep(1, k*k))
   stationary <- NULL
   try(
-    stationary    <- all(eigen(output$Fmat)$values<1)  
+    stationary    <- all(Mod(eigen(output$Fmat)$values)<1)  
   )
   # ----- Output
   out <- list(y = init_mdl$y, X = init_mdl$X, x = init_mdl$x, resid = output$resid, 
@@ -1973,7 +2072,7 @@ MSVARmdl <- function(Y, p, k, control = list()){
               theta_sig_ind = theta_sig_ind, theta_var_ind = theta_var_ind, theta_P_ind = theta_P_ind, 
               stationary = stationary, n = init_mdl$n, q = q, p = p, k = k, control = con,
               P = output$P, pinf = output$pinf, St = output$St, logLike = output$logLike,  
-              deltath = output$deltath, iterations = output$iterations, theta_0 = output$theta_0,
+              deltath = output$deltath, iterations = output$iterations, converged = output$converged, theta_0 = output$theta_0,
               init_used = output$init_used, msmu = con$msmu, msvar = con$msvar)
   # Define class
   class(out) <- "MSVARmdl"
@@ -1991,7 +2090,15 @@ MSVARmdl <- function(Y, p, k, control = list()){
                         if (con$msvar==TRUE) paste0("sig_",sig_n_tmp[,1],",",sig_n_tmp[,2]) else paste0("sig_",covar_vech(t(matrix(as.double(sapply((1:q),  function(x) paste0(x, (1:q)))), q,q)))),
                         paste0("p_",c(sapply((1:k),  function(x) paste0(x, (1:k)) ))))
   if (con$getSE==TRUE){
-    out <- thetaSE(out)
+    if (identical(con$se_method, "louis")) {
+      out <- thetaSE_louis(out)
+    } else {
+      out <- thetaSE(out)
+      if (all(is.na(out$theta_se))) {
+        message("Hessian-based SEs failed; falling back to Louis (1982) method.")
+        out <- thetaSE_louis(out)
+      }
+    }
   }
   if (is.null(con$init_theta)){
     out$trace <- output_all
@@ -2002,23 +2109,26 @@ MSVARmdl <- function(Y, p, k, control = list()){
 
 
 
-#' @title Markov-switching vector autoregressive model 
-#' 
-#' @description This function estimates a Markov-switching vector autoregressive model 
-#' 
+#' @title Markov-switching vector autoregressive model with exogenous regressors
+#'
+#' @description This function estimates a Markov-switching vector autoregressive model with exogenous regressors.
+#'
 #' @param Y (\code{T x q}) vector with observational data.
 #' @param p integer for the number of lags to use in estimation. Must be greater than or equal to \code{0}.
 #' @param k integer for the number of regimes to use in estimation. Must be greater than or equal to \code{2}.
-#' @param Z a \code{(T x qz)} matrix of exogenous regressors. 
+#' @param Z a \code{(T x qz)} matrix of exogenous regressors.
 #' @param control List with optimization options including:
 #' \itemize{
 #'  \item getSE: Boolean. If \code{TRUE} standard errors are computed and returned. If \code{FALSE} standard errors are not computed. Default is \code{TRUE}.
+#'  \item se_method: String determining the standard-error method. Options are \code{"hessian"} (default) and \code{"louis"} (Louis 1982 expected-information); the Louis method is used automatically as a fallback when the Hessian is ill-conditioned.
 #'  \item msmu: Boolean. If \code{TRUE} model is estimated with switch in mean. If \code{FALSE} model is estimated with constant mean. Default is \code{TRUE}.
 #'  \item msvar: Boolean. If \code{TRUE} model is estimated with switch in variance. If \code{FALSE} model is estimated with constant variance. Default is \code{TRUE}.
 #'  \item init_theta: vector of initial values. vector must contain \code{(1 x q)} vector \code{mu}, \code{vech(sigma)}, and \code{vec(P)} where sigma is a \code{(q x q)} covariance matrix. This is optional. Default is \code{NULL}, in which case \code{\link{initVals_MSARmdl}} is used to generate initial values.
 #'  \item method: string determining which method to use. Options are \code{'EM'} for EM algorithm or \code{'MLE'} for Maximum Likelihood Estimation.  Default is \code{'EM'}.
 #'  \item maxit: integer determining the maximum number of EM iterations.
-#'  \item thtol: double determining the convergence criterion for the absolute difference in parameter estimates \code{theta} between iterations. Default is \code{1e-6}.
+#'  \item thtol: double determining the convergence criterion for the relative change in the parameter estimates \code{theta} between iterations (used when \code{conv} is \code{"theta"}, \code{"both"}, or \code{"both-A"}). Default is \code{1e-6}.
+#'  \item ltol: double determining the convergence criterion for the relative change in the log-likelihood between iterations (used when \code{conv} is \code{"loglik"}, \code{"both"}, \code{"loglik-A"}, or \code{"both-A"}). Default is \code{1e-7}.
+#'  \item conv: string determining the EM convergence criterion. \code{"loglik"} (the default) stops on the relative change in the log-likelihood; \code{"theta"} stops on the relative change in the parameters (the convention of Hamilton (1994) and of earlier versions of this package); \code{"both"} requires both, following Krolzig (1997); \code{"loglik-A"} and \code{"both-A"} replace the log-likelihood test with the Aitken-accelerated criterion of Bohning et al. (1994) and McLachlan and Krishnan (2008). Default is \code{"loglik"}.
 #'  \item maxit_converge: integer determining the maximum number of initial values attempted until solution is finite. For example, if parameters in \code{theta} or \code{logLike} are \code{NaN} another set of initial values (up to \code{maxit_converge}) is attempted until finite values are returned. This does not occur frequently for most types of data but may be useful in some cases. Once finite values are obtained, this counts as one iteration towards \code{use_diff_init}. Default is \code{500}.
 #'  \item use_diff_init: integer determining how many different initial values to try (that do not return \code{NaN}; see \code{maxit_converge}). Default is \code{1}.
 #'  \item mle_stationary_constraint: Boolean determining if only stationary solutions are considered (if \code{TRUE}) or not (if \code{FALSE}). Default is \code{TRUE}.
@@ -2027,7 +2137,7 @@ MSVARmdl <- function(Y, p, k, control = list()){
 #'  \item mle_theta_upp: Vector with upper bounds on parameters (Used only if method = "MLE"). Default is \code{NULL}.
 #' }
 #' 
-#' @return List of class \code{MSVARmdl} (\code{S3} object) with model attributes including:
+#' @return List of class \code{MSVARXmdl} (\code{S3} object) with model attributes including:
 #' \itemize{
 #'   \item y: a \code{(T-p x q)} matrix of observations.
 #'   \item X: a \code{(T-p x p*q + const)} matrix of lagged observations with a leading column of \code{1}s.
@@ -2036,7 +2146,7 @@ MSVARmdl <- function(Y, p, k, control = list()){
 #'   \item fitted: a \code{(T x q)} matrix of fitted values.
 #'   \item intercept: a \code{(k x q)} matrix of estimated intercepts of each process.
 #'   \item mu: a \code{(k x q)} matrix of estimated means of each process.
-#'   \item beta: a list containing \code{k} separate \code{((1 + p + qz) x q)} matrix of estimated coefficients for each regime.  
+#'   \item beta: a list containing \code{k} separate \code{((1 + p + qz) x q)} matrix of estimated coefficients for each regime.
 #'   \item betaZ: a \code{(qz x q)} matrix of estimated exogenous regressor coefficients.
 #'   \item phi: estimates of autoregressive coefficients.
 #'   \item Fmat: Companion matrix containing autoregressive coefficients.
@@ -2055,8 +2165,9 @@ MSVARmdl <- function(Y, p, k, control = list()){
 #'   \item P: a \code{(k x k)} transition matrix.
 #'   \item pinf: a \code{(k x 1)} vector with limiting probabilities of each regime.
 #'   \item St: a \code{(T x k)} vector with smoothed probabilities of each regime at each time \code{t}.
-#'   \item deltath: double with maximum absolute difference in vector \code{theta} between last iteration.
+#'   \item deltath: double with the maximum relative change in vector \code{theta} on the last iteration.
 #'   \item iterations: number of EM iterations performed to achieve convergence (if less than \code{maxit}).
+#'   \item converged: Boolean. \code{TRUE} if the \code{conv} convergence criterion was met before \code{maxit} iterations, \code{FALSE} otherwise.
 #'   \item theta_0: vector of initial values used.
 #'   \item init_used: number of different initial values used to get a finite solution. See description of input \code{maxit_converge}.
 #'   \item msmu: Boolean. If \code{TRUE} model was estimated with switch in mean. If \code{FALSE} model was estimated with constant mean.
@@ -2071,10 +2182,10 @@ MSVARmdl <- function(Y, p, k, control = list()){
 #'   \item theta_se: standard errors of parameters in \code{theta}.  Only returned if \code{getSE=TRUE}.
 #'   \item trace: List with Lists of estimation output for each initial value used due to \code{use_diff_init > 1}.
 #' }
-#' 
-#' @return List with model characteristics
-#' 
+#'
 #' @references Dempster, A. P., N. M. Laird, and D. B. Rubin. 1977. “Maximum Likelihood from Incomplete Data via the EM Algorithm.” \emph{Journal of the Royal Statistical Society}. Series B 39 (1): 1–38..
+#' @references Böhning, D., E. Dietz, R. Schaub, P. Schlattmann, and B. G. Lindsay. 1994. “The distribution of the likelihood ratio for mixtures of densities from the one-parameter exponential family.” \emph{Annals of the Institute of Statistical Mathematics} 46 (2): 373–388.
+#' @references McLachlan, G. J., and T. Krishnan. 2008. \emph{The EM Algorithm and Extensions}. 2nd ed. Hoboken, New Jersey: John Wiley & Sons.
 #' @references Krolzig, Hans-Martin. 1997. “The markov-switching vector autoregressive model.”. Springer.
 #'  
 #' @seealso \code{\link{VARmdl}}
@@ -2083,13 +2194,16 @@ MSVARmdl <- function(Y, p, k, control = list()){
 MSVARXmdl <- function(Y, p, k, Z, control = list()){
   # ----- Set control values
   con <- list(getSE = TRUE,
-              msmu = TRUE, 
+              se_method = "hessian",
+              msmu = TRUE,
               msvar = TRUE,
               init_theta = NULL,
               method = "EM",
               maxit = 1000,
-              thtol = 1.e-6, 
-              maxit_converge = 500, 
+              thtol = 1.e-6,
+              ltol = 1.e-7,
+              conv = "loglik",
+              maxit_converge = 500,
               use_diff_init = 1,
               mle_stationary_constraint = TRUE,
               mle_variance_constraint = 1e-3,
@@ -2106,10 +2220,13 @@ MSVARXmdl <- function(Y, p, k, Z, control = list()){
   }
   con$Z = Z
   # ---------- Optimization options
-  optim_options <- list(maxit = con$maxit, thtol = con$thtol)
+  con$conv <- match.arg(con$conv, c("theta", "loglik", "both", "loglik-A", "both-A"))
+  if (!isTRUE(con$use_diff_init >= 1)) stop("'use_diff_init' must be an integer >= 1.")
+  if (!is.null(con$maxit_converge) && !isTRUE(con$maxit_converge >= 1)) stop("'maxit_converge' must be an integer >= 1.")
+  optim_options <- list(maxit = con$maxit, thtol = con$thtol, ltol = con$ltol, conv = con$conv)
   # pre-define list and matrix length for results
   output_all <- list()
-  max_loglik <- matrix(0, con$use_diff_init, 1)
+  max_loglik <- matrix(-Inf, con$use_diff_init, 1)
   # ---------- Estimate linear model to use for initial values & transformed series
   init_control <- list(const = TRUE, getSE = FALSE)
   init_mdl <- VARXmdl(Y, p = p, Z = Z, control = init_control)
@@ -2170,6 +2287,7 @@ MSVARXmdl <- function(Y, p, k, Z, control = list()){
           }
           init_used = init_used + 1
         }
+        if (is.null(output_tmp)) output_tmp <- list(logLike=-Inf, theta=rep(NA_real_, length(theta_0)))
         output_tmp$theta_0 <- theta_0
         max_loglik[xi] <- output_tmp$logLike
         output_tmp$init_used <- init_used
@@ -2182,7 +2300,7 @@ MSVARXmdl <- function(Y, p, k, Z, control = list()){
       xl = which.max(max_loglik)
       if (length(xl)==0){
         warning("Model(s) did not converge. Use higher 'use_diff_init' or 'maxit_converge'.")
-        output <- output_all[[1]] 
+        output <- output_all[[1]]
       }else{
         output <- output_all[[xl]] 
       }
@@ -2190,7 +2308,7 @@ MSVARXmdl <- function(Y, p, k, Z, control = list()){
   }else{
     if (con$method=="EM"){
       # ----- Estimate using EM algorithm and initial values provided
-      output <- MSVARmdl_em(con$init_theta, init_mdl, k, optim_options)
+      output <- MSVARXmdl_em(con$init_theta, init_mdl, k, optim_options)
       output$theta_0 <- con$init_theta
       output$init_used <- 1  
     }else if (con$method=="MLE"){
@@ -2231,7 +2349,7 @@ MSVARXmdl <- function(Y, p, k, Z, control = list()){
   theta_P_ind     <- c(rep(0, length(output$theta) - k*k) , rep(1, k*k))
   stationary <- NULL
   try(
-    stationary    <- all(eigen(output$Fmat)$values<1)  
+    stationary    <- all(Mod(eigen(output$Fmat)$values)<1)  
   )
   # ----- Output
   out <- list(y = init_mdl$y, X = init_mdl$X, x = init_mdl$x, resid = output$resid, 
@@ -2241,7 +2359,7 @@ MSVARXmdl <- function(Y, p, k, Z, control = list()){
               theta_sig_ind = theta_sig_ind, theta_var_ind = theta_var_ind, theta_P_ind = theta_P_ind, 
               stationary = stationary, n = init_mdl$n, q = q, p = p, k = k, control = con,
               P = output$P, pinf = output$pinf, St = output$St, logLike = output$logLike,  
-              deltath = output$deltath, iterations = output$iterations, theta_0 = output$theta_0,
+              deltath = output$deltath, iterations = output$iterations, converged = output$converged, theta_0 = output$theta_0,
               init_used = output$init_used, msmu = con$msmu, msvar = con$msvar)
   # Define class
   class(out) <- "MSVARmdl"
@@ -2261,7 +2379,15 @@ MSVARXmdl <- function(Y, p, k, Z, control = list()){
                         if (con$msvar==TRUE) paste0("sig_",sig_n_tmp[,1],",",sig_n_tmp[,2]) else paste0("sig_",covar_vech(t(matrix(as.double(sapply((1:q),  function(x) paste0(x, (1:q)))), q,q)))),
                         paste0("p_",c(sapply((1:k),  function(x) paste0(x, (1:k)) ))))
   if (con$getSE==TRUE){
-    out <- thetaSE(out)
+    if (identical(con$se_method, "louis")) {
+      out <- thetaSE_louis(out)
+    } else {
+      out <- thetaSE(out)
+      if (all(is.na(out$theta_se))) {
+        message("Hessian-based SEs failed; falling back to Louis (1982) method.")
+        out <- thetaSE_louis(out)
+      }
+    }
   }
   if (is.null(con$init_theta)){
     out$trace <- output_all
